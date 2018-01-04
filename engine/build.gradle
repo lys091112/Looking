@@ -1,0 +1,10 @@
+group 'com.crescent.alert'
+version '1.0-SNAPSHOT'
+
+//apply plugin: 'antlr'
+
+dependencies {
+    compile "org.antlr:antlr4-runtime:${Antlr_Version}"
+
+}
+
