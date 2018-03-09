@@ -2,24 +2,21 @@ package com.crescent.alert.engine.provider.event;
 
 import static java.util.stream.StreamSupport.stream;
 
+import com.crescent.alert.engine.provider.Event;
 import com.google.common.collect.Lists;
-import com.crescent.alert.engine.Event;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
-import lombok.NonNull;
 
-public class DefaultEventsProvider implements IEventsProvider {
+public class DefaultEventsProvider extends AbstractEventsProvider {
 
-    private Iterable<Event> events;
+    private List<Event> events;
 
-    public DefaultEventsProvider(@NonNull Iterable<Event> events) {
+    public DefaultEventsProvider(List<Event> events) {
         this.events = events;
     }
 
     @Override
-    public List<Event> getEventsByFixedCount(int count) {
-
+    public List<Event> findEventsByFixedCount(String streamId, int count) {
         List<Event> eventList = Lists.newLinkedList(events);
 
         int endIndex = eventList.size();
@@ -28,33 +25,10 @@ public class DefaultEventsProvider implements IEventsProvider {
     }
 
     @Override
-    public List<Event> getEventsByTimeWindow(String key, long startTime, long endTime) {
+    public List<Event> findEventsByTimeWindow(String streamId, long startTime, long endTime) {
         return stream(events.spliterator(), false)
             .filter(event -> startTime < event.getTimestamp() && event.getTimestamp() <= endTime)
             .collect(Collectors.toList());
     }
 
-    @Override
-    public Event getThePreviousEvent(@NonNull Event event) {
-        Iterator<Event> iterator = events.iterator();
-        Event previousEvent;
-        if (iterator.hasNext()) {
-            previousEvent = iterator.next();
-            while (iterator.hasNext()) {
-                Event currentEvent = iterator.next();
-                if (event.equals(currentEvent)) {
-                    return previousEvent;
-                } else {
-                    previousEvent = currentEvent;
-                }
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public Event getEventBySourceEventId(String sourceEventId) {
-
-        return null;
-    }
 }

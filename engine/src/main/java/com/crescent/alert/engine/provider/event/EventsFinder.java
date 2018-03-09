@@ -1,10 +1,9 @@
 package com.crescent.alert.engine.provider.event;
 
-import com.crescent.alert.engine.Event;
+import com.crescent.alert.engine.provider.Event;
 import com.crescent.alert.engine.provider.event.boundingBox.BoundingBox;
 import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,9 +15,7 @@ public abstract class EventsFinder {
         this.boundingBox = boundingBox;
     }
 
-    protected IEventsProvider provider;
-
     protected BoundingBox boundingBox;
 
-    public abstract List<Event> backwardFrom(Event event, Map<String, String> params);
+    public abstract List<Event> backwardFrom(Event event, Map<String, String> params, AbstractEventsProvider provider);
 }

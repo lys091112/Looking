@@ -1,12 +1,9 @@
 package com.crescent.alert.engine.operands;
 
-import com.crescent.alert.engine.Event;
 import com.crescent.alert.engine.exception.NotFoundException;
+import com.crescent.alert.engine.operands.aggregations.AggregationOperandBase;
 import com.crescent.alert.engine.provider.ProcessingContext;
 import com.google.common.collect.Sets;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,7 +17,7 @@ public class NameOperand implements Operand<Object> {
     private final String fieldName;
 
     @Override
-    public Set<AbstractAggregationOperand> getAggregationOperands() {
+    public Set<AggregationOperandBase> getAggregationOperands() {
         return Sets.newHashSet();
     }
 
@@ -30,32 +27,17 @@ public class NameOperand implements Operand<Object> {
     }
 
     @Override
-    public Object getValue(Event currEvent, List<Event> events, Map<String, String> parameters) throws NotFoundException {
-        String valueStr = currEvent != null ? currEvent.getMetrics().get(fieldName) :
-            events.get(events.size() - 1).getMetrics().get(fieldName);
+    public Object getValue(ProcessingContext context) {
+        String valueStr = context.getCurrentEvent().getMetrics().get(fieldName);
 
         if (valueStr == null) {
             throw new NotFoundException("field:[" + fieldName +
-                "] in event metrics set: " + events.get(events.size() - 1).getMetrics() + ".");
+                "] in event metrics set: " + context.getCurrentEvent().getMetrics() + ".");
         }
         try {
             return Double.parseDouble(valueStr);
         } catch (NumberFormatException e) {
-            return valueStr; // 支持字符串作为metric值
+            return valueStr;
         }
-    }
-
-    @Override
-    public Object getValue(ProcessingContext context) {
-        final Event event = context.getCurrentEvent();
-        Optional<String> result = event.readValue(this.fieldName);
-        if (!result.isPresent()) {
-            result = event.readValue(getFullName());
-        }
-        return result.orElse(null);
-    }
-
-    private String getFullName() {
-        return String.format("%s.%s", streamName, fieldName);
     }
 }

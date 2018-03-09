@@ -1,0 +1,67 @@
+{
+  "priorityStatus": [
+    {
+      "priority": 1,
+      "severity": "NORMAL",
+      "defaultState": true,
+      "childSeverity": [
+        "CLOSE_WARNING",
+        "CLOSE_CRITICAL"
+      ]
+    },
+    {
+      "priority": 2,
+      "severity": "WARNING",
+      "childSeverity": [
+        "OPEN_WARNING",
+        "DOWNGRADED",
+        "CONTINUES_WARNING"
+      ]
+    },
+    {
+      "priority": 3,
+      "severity": "CRITICAL",
+      "childSeverity": [
+        "OPEN_CRITICAL",
+        "CONTINUES_CRITICAL",
+        "DOWNGRADED"
+      ]
+    }
+  ],
+  "policies": [
+    {
+      "severity": "CLOSE_CRITICAL",
+      "dsl": "select previous(severity) as previous_severity, severity as current_severity from eventStream where previous(severity) = 'CRITICAL' AND severity = 'NORMAL' for last ?critical_duration_time min"
+    },
+    {
+      "severity": "CLOSE_WARNING",
+      "dsl": "select previous(severity) as previous_severity, severity as current_severity from eventStream where previous(severity) = 'WARNING' AND severity = 'NORMAL' for last ?warning_duration_time min"
+    },
+    {
+      "severity": "CONTINUES_CRITICAL",
+      "dsl": "select count(severity='CRITICAL') as criticalCount, count(severity) as count from eventStream where count(severity='CRITICAL') = count(severity) for last ?durationInMinutes min",
+      "ignoreBeforeTrigger": true
+    },
+    {
+      "severity": "CONTINUES_WARNING",
+      "dsl": "select count(severity='WARNING') as warningCount, count(severity) as count from eventStream where count (severity='WARNING') = count(severity) for last ?durationInMinutes min",
+      "ignoreBeforeTrigger": true
+    },
+    {
+      "severity": "OPEN_CRITICAL",
+      "dsl": "select previous(severity) as previous_severity, severity as current_severity from eventStream where (previous(severity) = '' OR previous(severity) = 'NORMAL') AND severity = 'CRITICAL' for last ?critical_duration_time min"
+    },
+    {
+      "severity": "OPEN_WARNING",
+      "dsl": "select previous(severity) as previous_severity, severity as current_severity from eventStream where (previous(severity) = '' OR previous(severity) = 'NORMAL') AND severity = 'WARNING' for last ?warning_duration_time min"
+    },
+    {
+      "severity": "DOWNGRADED",
+      "dsl": "select previous(severity) as previous_severity, severity as current_severity from eventStream where previous(severity) = 'CRITICAL' AND severity = 'WARNING' for last ?critical_duration_time min"
+    },
+    {
+      "severity": "UPGRADED",
+      "dsl": "select previous(severity) as previous_severity, severity as current_severity from eventStream where previous(severity) = 'WARNING' AND severity = 'CRITICAL' for last ?warning_duration_time min"
+    }
+  ]
+}

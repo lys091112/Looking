@@ -1,7 +1,7 @@
 package com.crescent.alert.engine;
 
+import com.crescent.alert.engine.provider.Event;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.Data;
 import lombok.NonNull;
@@ -14,15 +14,7 @@ public class TestEvent implements Event, Comparable<Event> {
     private String eventCategory;
     private Map<String, String> metrics;
     private String severity;
-    private String id;
-    private Long cycleId = 0L; // The initialize timestamp of the beginning of event cycle
     private long timestamp;
-    private long timeScope;
-    private long time;
-
-    private Map<String, String> tags;
-
-    private Long index;
 
     @Override
     public int compareTo(@NonNull Event o) {
@@ -35,7 +27,7 @@ public class TestEvent implements Event, Comparable<Event> {
     }
 
     @Override
-    public String getKey() {
+    public String getStreamId() {
         return null;
     }
 
@@ -45,21 +37,13 @@ public class TestEvent implements Event, Comparable<Event> {
     }
 
     @Override
-    public String getStreamId() {
+    public String getRuleId() {
         return null;
     }
 
-    @Override
-    public Optional<String> readValue(String fieldName) {
-        return null;
-    }
-
-    public TestEvent(String key, Map<String, String> metrics, UUID uuid, long timestamp, long timeScope, long time) {
+    public TestEvent(String key, Map<String, String> metrics, long timestamp) {
         this.key = key;
         this.metrics = metrics;
-        this.id = uuid.toString();
         this.timestamp = timestamp;
-        this.timeScope = timeScope;
-        this.time = time;
     }
 }

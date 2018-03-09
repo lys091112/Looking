@@ -1,0 +1,26 @@
+
+
+consumers:
+  type: kafka
+  - name: KafkaConsumerTest
+    bootstrapServers: localhost:9092
+    groupId: test-consumer-group
+    autoCommit: true
+    autoCommitIntervalMs: 10000
+    sessionTimeoutMs: 30000
+    keySerializer: org.apache.kafka.common.serialization.StringDeserializer
+    valueSerializer: com.crescent.alert.core.collector.serde.EventDeserializer
+    topic: as_jl_event
+    threadNums: 4
+
+producers:
+  type: kafka
+  - bootstrapServers: localhost:9092
+    maxBlockMs: 5000
+    keySerializer: org.apache.kafka.common.serialization.StringSerializer
+    valueSerializer: com.crescent.alert.core.collector.serde.EventSerializer
+    topic: as_jl_alert
+    clientId: default-producer
+    regions:
+      - default_region
+

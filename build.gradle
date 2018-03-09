@@ -56,8 +56,12 @@ subprojects { subproj ->
         compile "org.projectlombok:lombok:${Lombok_Version}"
         compile "com.google.guava:guava:${Guava_Version}"
         compile "org.slf4j:slf4j-api:${Slf4j_Version}"
-        compile "com.alibaba:fastjson:${Alibaba_Json_Version}"
+//        compile "com.alibaba:fastjson:${Alibaba_Json_Version}"
         compile "org.apache.commons:commons-lang3:${Common_Lang3_Version}"
+        compile "org.apache.commons:commons-collections4:${Common_Collection_Version}"
+
+        compile "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${Jackson_Version}"
+        compile "com.fasterxml.jackson.core:jackson-databind:${Jackson_Version}"
 
     }
 }

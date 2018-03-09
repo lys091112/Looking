@@ -6,21 +6,21 @@ options {
 
 prog
 :
-	SELECT columList FROM tableRef
+	SELECT columnList FROM tableRef
 	(
-		whereCluaster
+		whereCluster
 	)? EOF
 ;
 
-columList
+columnList
 :
-	nameOprand
+	nameOperand
 	(
-		COMMA nameOprand
+		COMMA nameOperand
 	)*
 ;
 
-nameOprand
+nameOperand
 :
 	(
 		tableName = ID DOT
@@ -53,7 +53,6 @@ name
         | GTGT
     ) right = name # BitwiseName
 	| ID LPAREN columnName = name RPAREN # AggregationName
-	| ID LPAREN params = dynaBaseLineConfig RPAREN # DynaBLExpr
 	| ID LPAREN columnName = name COMMA predicate = boolExpr RPAREN # AggregationName
 	| ID LPAREN predicate = boolExpr RPAREN # AggregationName
 	| identity # columnName
@@ -82,7 +81,7 @@ tableRef
 	)?
 ;
 
-whereCluaster
+whereCluster
 :
 	WHERE
 	boolExpr
@@ -122,19 +121,9 @@ durationExpr
 	 FOR LAST number = name unit = (MINUTE | EVENTS)
 ;
 
-duration
-:
-    number = INT unit = (MINUTE | HOUR | DAY)
-;
-
 filterByExpr
 :
     FILTER BY ID (COMMA ID)*
 ;
 
 
-dynaBaseLineConfig
-:
-    columnName = nameOprand COMMA windowTime = duration COMMA cycleUnit = duration # MoMParams
-    | LBRACKET columList RBRACKET COMMA FLOAT # AnomListSizeParams
-;

@@ -1,0 +1,11 @@
+group 'com.crescent.alert'
+version '1.0-SNAPSHOT'
+
+dependencies {
+    compile "org.springframework.boot:spring-boot-starter-web:${SpringBoot_Version}"
+    compile project(":common")
+    compile project(":core")
+
+    testCompile "org.springframework.boot:spring-boot-starter-test:${SpringBoot_Version}"
+
+}

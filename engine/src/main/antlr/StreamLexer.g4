@@ -65,7 +65,6 @@ FOR:F O R;
 IF:I F; 
 
 
-
 ALL:A L L; 
 UNION:U N I O N; 
 EXCEPT:E X C E P T; 

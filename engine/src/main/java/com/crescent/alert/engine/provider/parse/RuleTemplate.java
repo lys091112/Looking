@@ -1,24 +1,30 @@
 package com.crescent.alert.engine.provider.parse;
 
-import com.crescent.alert.engine.Event;
-import com.crescent.alert.engine.booleanExprs.IBooleanExpression;
 import com.crescent.alert.engine.exception.NotFoundException;
 import com.crescent.alert.engine.operands.AliasOperand;
 import com.crescent.alert.engine.operands.NameOperand;
 import com.crescent.alert.engine.operands.Operand;
-import com.crescent.alert.engine.operands.dynamic.PeriodOperand;
+import com.crescent.alert.engine.operands.aggregations.AggregationOperandBase;
+import com.crescent.alert.engine.operands.booleanExprs.IBooleanExpression;
+import com.crescent.alert.engine.provider.Event;
+import com.crescent.alert.engine.provider.ProcessingContext;
+import com.crescent.alert.engine.provider.event.AbstractEventsProvider;
 import com.crescent.alert.engine.provider.event.EventsFinder;
-import com.crescent.alert.engine.provider.event.IEventsProvider;
+import com.crescent.alert.engine.provider.event.boundingBox.BoundingBox;
+import com.crescent.alert.engine.provider.event.boundingBox.SizeBoundingBox;
+import com.crescent.alert.engine.provider.event.boundingBox.TimeBoundingBox;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,35 +41,56 @@ public class RuleTemplate {
 
     private final EventsFinder eventsFinder;
 
-    private final List<PeriodOperand> periodOperands;
-
-    public boolean getResult(Event currEvent, IEventsProvider provider, Map<String, String> params) {
+    public RuleResult getResult(Event currEvent, AbstractEventsProvider provider, Map<String, String> params) {
         try {
             List<Event> events = findEvents(currEvent, provider, params);
-            return getResult(currEvent, events, params);
+            if (CollectionUtils.isEmpty(events)) {
+                return new RuleResult(false);
+            }
+            return getResult(currEvent, filterByKeys(currEvent, events), params);
         } catch (IllegalArgumentException e) {
-            logger.error("Err'or occurred when obtaining the 'whereclause' result. Rule id:" + currEvent.getStreamId() + "\r\n" + e.getMessage(), e);
-            return false;
+            logger.error(
+                "Error occurred when obtaining the 'whereClause' success. Rule id:" + currEvent.getRuleId() + "\r\n"
+                    + e.getMessage(), e);
+            return new RuleResult(false);
         }
     }
 
-    private List<Event> findEvents(Event currEvent, IEventsProvider provider, Map<String, String> params)
+    /**
+     * 获取该规则计算的持续时间, 并返回dsl中的单位记录
+     */
+    public Pair<Long, TimeUnit> getBoundingPeriodWithTimeUnit(Map<String, String> params) {
+        BoundingBox boundingBox = this.eventsFinder.getBoundingBox();
+        if (boundingBox instanceof TimeBoundingBox) {
+            TimeBoundingBox timeBoundingBox = (TimeBoundingBox) boundingBox;
+            return Pair.of(timeBoundingBox.getPeriodWithSameTimeUnit(params), timeBoundingBox.getBufferUnit());
+
+        } else if (boundingBox instanceof SizeBoundingBox) {
+            return Pair.of(((SizeBoundingBox) boundingBox).getSize(), null);
+
+        }
+        throw new UnsupportedOperationException("unknown bounding box type!");
+    }
+
+    private List<Event> findEvents(Event currEvent, AbstractEventsProvider provider, Map<String, String> params)
         throws IllegalArgumentException {
         if (null == eventsFinder) {
             return Collections.emptyList();
         }
-        eventsFinder.setProvider(provider);
-        return eventsFinder.backwardFrom(currEvent, params);
+        return eventsFinder.backwardFrom(currEvent, params, provider);
     }
 
-    public boolean getResult(Event currEvent, List<Event> events, Map<String, String> params) {
+    public RuleResult getResult(Event currEvent, List<Event> events, Map<String, String> params) {
         try {
-            return this.getWhereClause().getValue(currEvent, filterByKeys(currEvent, events), params);
+            List<Event> fileterEvents = filterByKeys(currEvent, events);
+            if (this.getWhereClause().getValue(new ProcessingContext(currEvent, fileterEvents, params))) {
+                return new RuleResult(true, getContext(currEvent, fileterEvents, params));
+            }
         } catch (NotFoundException e) {
-            // dsl使用不存在的字段做触发告警条件的时候, 记录异常同时不触发告警
+            // 对于不存在的监控字段,不触发告警，直接返回false
             logger.error(e.getMessage(), e);
-            return false;
         }
+        return new RuleResult(false);
     }
 
     private List<Event> filterByKeys(Event currEvent, List<Event> events) {
@@ -72,24 +99,14 @@ public class RuleTemplate {
                 boolean filter = true;
                 for (Operand operand : filterKeys) {
                     filter = filter
-                        && (operand.getValue(e, Collections.singletonList(e), null).
-                        equals(operand.getValue(currEvent, Collections.singletonList(
-                            events.get(events.size() - 1)), null)));
+                        && (operand.getValue(new ProcessingContext(e, Collections.singletonList(e), null)).
+                        equals(operand.getValue(new ProcessingContext(currEvent, Collections.singletonList(
+                            events.get(events.size() - 1)), null))));
                 }
                 return filter;
             }).collect(Collectors.toList());
         }
         return events;
-    }
-
-    public Map<String, String> getContext(Event currEvent, IEventsProvider provider, Map<String, String> params) {
-        List<Event> events = findEvents(currEvent, provider, params);
-        try {
-            return getContext(currEvent, events, params);
-        } catch (IllegalArgumentException e) {
-            logger.error("Error occurred when obtaining the selected context. Rule Id:" + currEvent.getStreamId() + "\r\n" + e.getMessage(), e);
-            return new HashMap<>();
-        }
     }
 
     public Map<String, String> getContext(Event currEvent, List<Event> events, Map<String, String> params) {
@@ -99,16 +116,15 @@ public class RuleTemplate {
             } else if (AliasOperand.class.isInstance(op)) {
                 return ((AliasOperand) op).getAlias();
             }
-
             throw new RuntimeException("use an aggregation function as a column should specify an alias: " + op);
         }, op -> {
             try {
-                return op.getValue(currEvent, filterByKeys(currEvent, events), params).toString();
+                return op.getValue(new ProcessingContext(currEvent, filterByKeys(currEvent, events), params))
+                    .toString();
             } catch (NotFoundException e) {
                 // dsl使用不存在的字段做select查询条件的时候, 返回空值.
                 return "";
             }
-
         }));
     }
 
@@ -117,11 +133,12 @@ public class RuleTemplate {
         return "RuleTemplate [streams=" + streams + "]";
     }
 
-    public Set<AbstractAggregationOperand> getAggregationOperands() {
-        Set<AbstractAggregationOperand> operands = columns.stream().map(op -> op.getAggregationOperands()).reduce((s1, s2) -> {
-            s1.addAll(s2);
-            return s1;
-        }).orElseGet(HashSet::new);
+    public Set<AggregationOperandBase> getAggregationOperands() {
+        Set<AggregationOperandBase> operands = columns.stream().map(op -> op.getAggregationOperands())
+            .reduce((s1, s2) -> {
+                s1.addAll(s2);
+                return s1;
+            }).orElseGet(HashSet::new);
         operands.addAll(whereClause.getAggregationOperands());
         return operands;
     }

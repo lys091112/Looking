@@ -1,26 +1,20 @@
 package com.crescent.alert.engine.provider.parse;
 
-import static java.time.Duration.ofDays;
-import static java.time.Duration.ofHours;
-import static java.time.Duration.ofMinutes;
 import static java.util.stream.Collectors.toList;
 
 import com.crescent.alert.engine.antlr.StreamLexer;
 import com.crescent.alert.engine.antlr.StreamQuery.AddNameContext;
 import com.crescent.alert.engine.antlr.StreamQuery.AggregationNameContext;
 import com.crescent.alert.engine.antlr.StreamQuery.AndOprContext;
-import com.crescent.alert.engine.antlr.StreamQuery.AnomListSizeParamsContext;
 import com.crescent.alert.engine.antlr.StreamQuery.BasicBoolExprContext;
 import com.crescent.alert.engine.antlr.StreamQuery.BasicExprContext;
 import com.crescent.alert.engine.antlr.StreamQuery.BitwiseNameContext;
 import com.crescent.alert.engine.antlr.StreamQuery.BoolExprContext;
 import com.crescent.alert.engine.antlr.StreamQuery.CollectionContext;
-import com.crescent.alert.engine.antlr.StreamQuery.ColumListContext;
+import com.crescent.alert.engine.antlr.StreamQuery.ColumnListContext;
 import com.crescent.alert.engine.antlr.StreamQuery.ColumnNameContext;
 import com.crescent.alert.engine.antlr.StreamQuery.CompareExprContext;
-import com.crescent.alert.engine.antlr.StreamQuery.DurationContext;
 import com.crescent.alert.engine.antlr.StreamQuery.DurationExprContext;
-import com.crescent.alert.engine.antlr.StreamQuery.DynaBLExprContext;
 import com.crescent.alert.engine.antlr.StreamQuery.FilterByExprContext;
 import com.crescent.alert.engine.antlr.StreamQuery.FloatEleContext;
 import com.crescent.alert.engine.antlr.StreamQuery.IdEleContext;
@@ -29,10 +23,9 @@ import com.crescent.alert.engine.antlr.StreamQuery.InExprContext;
 import com.crescent.alert.engine.antlr.StreamQuery.IntEleContext;
 import com.crescent.alert.engine.antlr.StreamQuery.LRNameContext;
 import com.crescent.alert.engine.antlr.StreamQuery.LrExprContext;
-import com.crescent.alert.engine.antlr.StreamQuery.MoMParamsContext;
 import com.crescent.alert.engine.antlr.StreamQuery.MulNameContext;
 import com.crescent.alert.engine.antlr.StreamQuery.NameContext;
-import com.crescent.alert.engine.antlr.StreamQuery.NameOprandContext;
+import com.crescent.alert.engine.antlr.StreamQuery.NameOperandContext;
 import com.crescent.alert.engine.antlr.StreamQuery.NegativeFloatELeContext;
 import com.crescent.alert.engine.antlr.StreamQuery.NegativeIntEleContext;
 import com.crescent.alert.engine.antlr.StreamQuery.OrOprContext;
@@ -41,46 +34,42 @@ import com.crescent.alert.engine.antlr.StreamQuery.ParenthesisNameContext;
 import com.crescent.alert.engine.antlr.StreamQuery.ProgContext;
 import com.crescent.alert.engine.antlr.StreamQuery.StringEleContext;
 import com.crescent.alert.engine.antlr.StreamQuery.TableRefContext;
-import com.crescent.alert.engine.antlr.StreamQuery.WhereCluasterContext;
+import com.crescent.alert.engine.antlr.StreamQuery.WhereClusterContext;
 import com.crescent.alert.engine.antlr.StreamQueryVisitor;
-import com.crescent.alert.engine.booleanExprs.logical.BooleanExprAND;
-import com.crescent.alert.engine.booleanExprs.numerical.BooleanExprEQ;
-import com.crescent.alert.engine.booleanExprs.logical.BooleanExprIN;
-import com.crescent.alert.engine.booleanExprs.logical.BooleanExprNE;
-import com.crescent.alert.engine.booleanExprs.IBooleanExpression;
-import com.crescent.alert.engine.booleanExprs.numerical.BooleanExprGT;
-import com.crescent.alert.engine.booleanExprs.numerical.BooleanExprGTEQ;
-import com.crescent.alert.engine.booleanExprs.numerical.BooleanExprLT;
-import com.crescent.alert.engine.booleanExprs.numerical.BooleanExprLTEQ;
-import com.crescent.alert.engine.provider.event.boundingBox.BoundingBox;
-import com.crescent.alert.engine.provider.event.boundingBox.SizeBoundingBox;
 import com.crescent.alert.engine.exception.StreamParseException;
-import com.crescent.alert.engine.function.Function;
-import com.crescent.alert.engine.function.FunctionManager;
 import com.crescent.alert.engine.operands.AliasOperand;
 import com.crescent.alert.engine.operands.NameOperand;
 import com.crescent.alert.engine.operands.Operand;
 import com.crescent.alert.engine.operands.ParenthesisOperand;
 import com.crescent.alert.engine.operands.SetOperand;
-import com.crescent.alert.engine.operands.dynamic.PeriodOperand;
-import com.crescent.alert.engine.operands.arithmetics.BitwiseAndOperand;
-import com.crescent.alert.engine.operands.arithmetics.BitwiseOrOperand;
-import com.crescent.alert.engine.operands.arithmetics.BitwiseShlOperand;
-import com.crescent.alert.engine.operands.arithmetics.BitwiseShrOperand;
-import com.crescent.alert.engine.operands.arithmetics.BitwiseXorOperand;
-import com.crescent.alert.engine.operands.arithmetics.DivideOperand;
-import com.crescent.alert.engine.operands.arithmetics.MinusOperand;
-import com.crescent.alert.engine.operands.arithmetics.PlusOperand;
-import com.crescent.alert.engine.operands.arithmetics.ProductOperand;
+import com.crescent.alert.engine.operands.aggregations.function.CommonFunction;
+import com.crescent.alert.engine.operands.aggregations.function.FunctionManager;
+import com.crescent.alert.engine.operands.arithmetics.bitwise.BitwiseAndOperand;
+import com.crescent.alert.engine.operands.arithmetics.bitwise.BitwiseOrOperand;
+import com.crescent.alert.engine.operands.arithmetics.bitwise.BitwiseShlOperand;
+import com.crescent.alert.engine.operands.arithmetics.bitwise.BitwiseShrOperand;
+import com.crescent.alert.engine.operands.arithmetics.bitwise.BitwiseXorOperand;
+import com.crescent.alert.engine.operands.arithmetics.constant.DivideOperand;
+import com.crescent.alert.engine.operands.arithmetics.constant.MinusOperand;
+import com.crescent.alert.engine.operands.arithmetics.constant.PlusOperand;
+import com.crescent.alert.engine.operands.arithmetics.constant.ProductOperand;
+import com.crescent.alert.engine.operands.booleanExprs.IBooleanExpression;
+import com.crescent.alert.engine.operands.booleanExprs.logical.ANDBooleanExpr;
+import com.crescent.alert.engine.operands.booleanExprs.logical.INBooleanExpr;
+import com.crescent.alert.engine.operands.booleanExprs.logical.NEBooleanExpr;
+import com.crescent.alert.engine.operands.booleanExprs.logical.ORBooleanExpr;
+import com.crescent.alert.engine.operands.booleanExprs.numerical.EQBooleanExpr;
+import com.crescent.alert.engine.operands.booleanExprs.numerical.GTBooleanExpr;
+import com.crescent.alert.engine.operands.booleanExprs.numerical.GTEQBooleanExpr;
+import com.crescent.alert.engine.operands.booleanExprs.numerical.LTBooleanExpr;
+import com.crescent.alert.engine.operands.booleanExprs.numerical.LTEQBooleanExpr;
 import com.crescent.alert.engine.operands.primitives.FloatOperand;
 import com.crescent.alert.engine.operands.primitives.IntegerOperand;
 import com.crescent.alert.engine.operands.primitives.StringOperand;
-import com.crescent.alert.engine.operands.dynamic.MoMDuration;
 import com.crescent.alert.engine.provider.event.EventsFinderImpl;
-import com.google.common.collect.Lists;
-import com.crescent.alert.engine.booleanExprs.logical.BooleanExprOR;
+import com.crescent.alert.engine.provider.event.boundingBox.BoundingBox;
+import com.crescent.alert.engine.provider.event.boundingBox.SizeBoundingBox;
 import com.crescent.alert.engine.provider.event.boundingBox.TimeBoundingBox;
-import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -88,6 +77,7 @@ import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.RuleNode;
@@ -97,9 +87,6 @@ public class ConditionVisitor implements StreamQueryVisitor<Boolean> {
 
     private Deque<Object> stack = new ArrayDeque<>();
 
-    private boolean hasDynaBLFun = false;
-
-    private List<PeriodOperand> periodOperands = Lists.newArrayList();
     private RuleTemplate.RuleTemplateBuilder builder = RuleTemplate.builder();
 
     private String defaultTableName;
@@ -133,15 +120,15 @@ public class ConditionVisitor implements StreamQueryVisitor<Boolean> {
             }
             builder.streams((List<String>) stack.pop());
         }
-        if (ctx.columList() != null) {
-            if (!visitColumList(ctx.columList())) {
+        if (ctx.columnList() != null) {
+            if (!visitColumnList(ctx.columnList())) {
                 return false;
             }
             builder.columns((List<Operand>) stack.pop());
         }
 
-        if (ctx.whereCluaster() != null) {
-            if (!visitWhereCluaster(ctx.whereCluaster())) {
+        if (ctx.whereCluster() != null) {
+            if (!visitWhereCluster(ctx.whereCluster())) {
                 return false;
             }
             builder.whereClause((IBooleanExpression) stack.pop());
@@ -150,22 +137,22 @@ public class ConditionVisitor implements StreamQueryVisitor<Boolean> {
     }
 
     @Override
-    public Boolean visitColumList(ColumListContext ctx) {
-        List<Operand> oprands = new ArrayList<>();
-        List<NameOprandContext> list = ctx.nameOprand();
-        for (NameOprandContext nameOprandContext : list) {
-            if (!visitNameOprand(nameOprandContext)) {
+    public Boolean visitColumnList(ColumnListContext ctx) {
+        List<Operand> operands = new ArrayList<>();
+        List<NameOperandContext> list = ctx.nameOperand();
+        for (NameOperandContext nameOperandContext : list) {
+            if (!visitNameOperand(nameOperandContext)) {
                 return false;
             }
-            Operand oprand = (Operand) stack.pop();
-            oprands.add(oprand);
+            Operand operand = (Operand) stack.pop();
+            operands.add(operand);
         }
-        stack.push(oprands);
+        stack.push(operands);
         return true;
     }
 
     @Override
-    public Boolean visitNameOprand(NameOprandContext ctx) {
+    public Boolean visitNameOperand(NameOperandContext ctx) {
         // 每次都将默认的表名压入栈中
         stack.push(defaultTableName);
         if (ctx.tableName != null) {
@@ -173,15 +160,15 @@ public class ConditionVisitor implements StreamQueryVisitor<Boolean> {
         }
         if (visitName(ctx.columnName)) {
             // 选择的列
-            Operand inOprand = (Operand) stack.pop();
+            Operand inOperand = (Operand) stack.pop();
 
             // 选择热数据源
             defaultTableName = String.valueOf(stack.pop());
 
             if (ctx.alias != null) {
-                stack.push(new AliasOperand(inOprand, ctx.alias.getText()));
+                stack.push(new AliasOperand(inOperand, ctx.alias.getText()));
             } else {
-                stack.push(inOprand);
+                stack.push(inOperand);
             }
             return true;
         }
@@ -220,7 +207,7 @@ public class ConditionVisitor implements StreamQueryVisitor<Boolean> {
             IBooleanExpression left = (IBooleanExpression) stack.pop();
             if (visitBoolExpr(ctx.right)) {
                 IBooleanExpression right = (IBooleanExpression) stack.pop();
-                stack.push(new BooleanExprAND(left, right));
+                stack.push(new ANDBooleanExpr(left, right));
                 return true;
             }
         }
@@ -233,7 +220,7 @@ public class ConditionVisitor implements StreamQueryVisitor<Boolean> {
             IBooleanExpression left = (IBooleanExpression) stack.pop();
             if (visitBoolExpr(ctx.right)) {
                 IBooleanExpression right = (IBooleanExpression) stack.pop();
-                stack.push(new BooleanExprOR(left, right));
+                stack.push(new ORBooleanExpr(left, right));
                 return true;
             }
         }
@@ -256,20 +243,9 @@ public class ConditionVisitor implements StreamQueryVisitor<Boolean> {
             return visitBitwiseName((BitwiseNameContext) ctx);
         } else if (ctx instanceof ParenthesisNameContext) {
             return visitParenthesisName((ParenthesisNameContext) ctx);
-        } else if (ctx instanceof DynaBLExprContext) {
-            return visitDynaBLExpr((DynaBLExprContext) ctx);
         }
 
         return false;
-    }
-
-    private Function getFunFromNameContext(DynaBLExprContext nameContext) {
-        String functionName = nameContext.ID().getText();
-        Function fun = FunctionManager.getFunction(functionName);
-        if (fun == null) {
-            throw new StreamParseException(String.format("Dynamic baseline function: [%s] not exists.", functionName));
-        }
-        return fun;
     }
 
     @Override
@@ -277,16 +253,6 @@ public class ConditionVisitor implements StreamQueryVisitor<Boolean> {
         return visitName(ctx.name());
     }
 
-    @Override
-    public Boolean visitDynaBLExpr(DynaBLExprContext ctx) {
-
-        if (ctx.params instanceof AnomListSizeParamsContext) {
-            return visitAnomListSizeParams((AnomListSizeParamsContext) ctx.params);
-        } else if (ctx.params instanceof MoMParamsContext) {
-            return visitMoMParams((MoMParamsContext) ctx.params);
-        }
-        return false;
-    }
 
     @Override
     public Boolean visitMulName(MulNameContext ctx) {
@@ -303,7 +269,7 @@ public class ConditionVisitor implements StreamQueryVisitor<Boolean> {
                         stack.push(new DivideOperand(left, right));
                         return true;
                     case StreamLexer.MOD:
-                        throw new StreamParseException("Unsupport %");
+                        throw new StreamParseException("nonsupport %");
                     default:
                         return false;
                 }
@@ -430,24 +396,25 @@ public class ConditionVisitor implements StreamQueryVisitor<Boolean> {
 
         String aggFun = ctx.ID().getText();
         // aggregate operand
-        Function fun = FunctionManager.getFunction(aggFun);
+        CommonFunction fun = FunctionManager.getAggregateFunction(aggFun);
         if (fun == null) {
             throw new StreamParseException(String.format("aggregate function: [%s] not exists.", aggFun));
-        } else if (visitName(ctx.columnName)) {
+        }
+
+        if (visitName(ctx.columnName)) {
             // inner operand
             Operand innerOperand = (Operand) stack.pop();
-            Operand aggregationOperand = null;
+            Operand aggregationOperand;
 
             if (ctx.COMMA() != null) {
                 if (visitBoolExpr(ctx.predicate)) {
                     IBooleanExpression predicate = (IBooleanExpression) stack.pop();
-                    aggregationOperand = (Operand) fun.call(innerOperand, predicate);
-
+                    aggregationOperand = (Operand) fun.createInstance(innerOperand, predicate);
                 } else {
                     throw new StreamParseException("aggregate failed, no such define supported");
                 }
             } else {
-                aggregationOperand = (Operand) fun.call(innerOperand);
+                aggregationOperand = (Operand) fun.createInstance(innerOperand);
             }
 
             // 入栈
@@ -457,7 +424,7 @@ public class ConditionVisitor implements StreamQueryVisitor<Boolean> {
             // 里面返回的operand
             IBooleanExpression predicate = (IBooleanExpression) stack.pop();
 
-            Operand aggregationOperand = (Operand) fun.call(predicate);
+            Operand aggregationOperand = (Operand) fun.createInstance(predicate);
             // 入栈
             stack.push(aggregationOperand);
             return true;
@@ -467,12 +434,12 @@ public class ConditionVisitor implements StreamQueryVisitor<Boolean> {
 
 
     @Override
-    public Boolean visitWhereCluaster(WhereCluasterContext ctx) {
+    public Boolean visitWhereCluster(WhereClusterContext ctx) {
         if (ctx.durationExpr() != null) {
             return visitBoolExpr(ctx.boolExpr())
                 && visitFilterByExpr(ctx.filterByExpr())
                 && visitDurationExpr(ctx.durationExpr());
-        } else if (visitBoolExpr(ctx.boolExpr()) && this.hasDynaBLFun) {
+        } else if (visitBoolExpr(ctx.boolExpr())) {
             return visitFilterByExpr(ctx.filterByExpr());
         }
         return false;
@@ -484,8 +451,6 @@ public class ConditionVisitor implements StreamQueryVisitor<Boolean> {
         if (visitName(ctx.number)) {
 
             final Operand numberOperand = (Operand) stack.pop();
-            int value = numberOperand instanceof IntegerOperand
-                ? ((IntegerOperand) numberOperand).getValue().intValue() : 0;
 
             if (ctx.unit.getStartIndex() == -1) {
                 throw new StreamParseException("Currently only support units: [events, min].");
@@ -494,9 +459,10 @@ public class ConditionVisitor implements StreamQueryVisitor<Boolean> {
             BoundingBox boundingBox;
             int type = ctx.unit.getType();
             if (type == StreamLexer.MINUTE) {
-                final long unitInMills = unitInMills(type);
-                boundingBox = new TimeBoundingBox(Duration.ofMillis(unitInMills * value));
+                boundingBox = new TimeBoundingBox(numberOperand, TimeUnit.MINUTES);
             } else if (type == StreamLexer.EVENTS) {
+                int value = numberOperand instanceof IntegerOperand
+                    ? ((IntegerOperand) numberOperand).getValue().intValue() : 0;
                 boundingBox = new SizeBoundingBox((long) value);
             } else {
                 throw new StreamParseException("Currently only support units: [events, min].");
@@ -508,77 +474,15 @@ public class ConditionVisitor implements StreamQueryVisitor<Boolean> {
     }
 
     @Override
-    public Boolean visitDuration(DurationContext ctx) {
-        if (ctx != null) {
-            Integer number = Integer.parseInt(ctx.number.getText());
-            switch (ctx.unit.getType()) {
-                case StreamLexer.MINUTE:
-                    stack.push(ofMinutes(number));
-                    return true;
-                case StreamLexer.HOUR:
-                    stack.push(ofHours(number));
-                    return true;
-                case StreamLexer.DAY:
-                    stack.push(ofDays(number));
-                    return true;
-                default:
-                    return false;
-            }
-        }
-        return false;
-    }
-
-    private long unitInMills(int unit) {
-        switch (unit) {
-            case StreamLexer.MINUTE:
-                return ofMinutes(1).toMillis();
-            case StreamLexer.HOUR:
-                return ofHours(1).toMillis();
-            case StreamLexer.DAY:
-                return ofDays(1).toMillis();
-            case StreamLexer.WEEK:
-                return ofDays(7).toMillis();
-            default:
-                return 0;
-        }
-    }
-
-    @Override
     public Boolean visitFilterByExpr(FilterByExprContext ctx) {
         if (ctx != null) {
-            List<NameOperand> operands = ctx.ID().stream().map(id -> new NameOperand(defaultTableName, id.getText())).collect(toList());
+            List<NameOperand> operands = ctx.ID().stream().map(id -> new NameOperand(defaultTableName, id.getText()))
+                .collect(toList());
             builder.filterKeys(operands);
         }
         return true;
     }
 
-    @Override
-    public Boolean visitMoMParams(MoMParamsContext ctx) {
-        DynaBLExprContext context = (DynaBLExprContext) ctx.getParent();
-        Function momFun = getFunFromNameContext(context);
-
-        if (visitDuration(ctx.cycleUnit) && visitDuration(ctx.windowTime) && visitNameOprand(ctx.columnName)) {
-            MoMDuration duration = new MoMDuration(
-                (Operand) stack.pop(),
-                (Duration) stack.pop(),
-                (Duration) stack.pop()
-            );
-            Operand funcOperand = (Operand) momFun.call(duration);
-            final PeriodOperand pOperand = (PeriodOperand) funcOperand;
-            if (!periodOperands.contains(pOperand)) {
-                periodOperands.add(pOperand);
-            }
-            stack.push(funcOperand);
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public Boolean visitAnomListSizeParams(AnomListSizeParamsContext ctx) {
-        throw new UnsupportedOperationException("unsupport");
-
-    }
 
     @Override
     public Boolean visitBasicExpr(BasicExprContext ctx) {
@@ -597,9 +501,6 @@ public class ConditionVisitor implements StreamQueryVisitor<Boolean> {
 
     @Override
     public Boolean visitCompareExpr(CompareExprContext ctx) {
-        if (ctx.left instanceof DynaBLExprContext) {
-            this.hasDynaBLFun = true;
-        }
         if (visitName(ctx.left)) {
             Operand left = (Operand) stack.pop();
             if (visitName(ctx.right)) {
@@ -609,22 +510,22 @@ public class ConditionVisitor implements StreamQueryVisitor<Boolean> {
                 int type = ctx.option.getType();
                 switch (type) {
                     case StreamLexer.GT:
-                        stack.push(new BooleanExprGT(left, right));
+                        stack.push(new GTBooleanExpr(left, right));
                         break;
                     case StreamLexer.GTEQ:
-                        stack.push(new BooleanExprGTEQ(left, right));
+                        stack.push(new GTEQBooleanExpr(left, right));
                         break;
                     case StreamLexer.EQ:
-                        stack.push(new BooleanExprEQ(left, right));
+                        stack.push(new EQBooleanExpr(left, right));
                         break;
                     case StreamLexer.LT:
-                        stack.push(new BooleanExprLT(left, right));
+                        stack.push(new LTBooleanExpr(left, right));
                         break;
                     case StreamLexer.LTEQ:
-                        stack.push(new BooleanExprLTEQ(left, right));
+                        stack.push(new LTEQBooleanExpr(left, right));
                         break;
                     case StreamLexer.NEQ:
-                        stack.push(new BooleanExprNE(left, right));
+                        stack.push(new NEBooleanExpr(left, right));
                         break;
 
                     default:
@@ -639,14 +540,11 @@ public class ConditionVisitor implements StreamQueryVisitor<Boolean> {
 
     @Override
     public Boolean visitInExpr(InExprContext ctx) {
-        if (ctx.left instanceof DynaBLExprContext) {
-            this.hasDynaBLFun = true;
-        }
         if (visitName(ctx.left)) {
             Operand left = (Operand) stack.pop();
             if (visitCollection(ctx.collection())) {
                 SetOperand right = (SetOperand) stack.pop();
-                stack.push(new BooleanExprIN(left, right));
+                stack.push(new INBooleanExpr(left, right));
                 return true;
             }
         }
@@ -660,7 +558,7 @@ public class ConditionVisitor implements StreamQueryVisitor<Boolean> {
         for (IdentityContext o : ctx.identity()) {
             visitIdentity(o);
             Operand operand = (Operand) stack.pop();
-            elements.add(operand.getValue(null, null, null));
+            elements.add(operand.getValue(null));
         }
         stack.push(new SetOperand(elements));
         return true;
@@ -685,7 +583,6 @@ public class ConditionVisitor implements StreamQueryVisitor<Boolean> {
     }
 
     public RuleTemplate getRuleTemplate() {
-        builder.periodOperands(periodOperands);
         return builder.build();
     }
 }

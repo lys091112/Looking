@@ -1,3 +1,6 @@
 rootProject.name = 'Looking'
 include 'engine'
+include 'runner'
+include 'common'
+include 'core'
 
