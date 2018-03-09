@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 *.settings/
 *target/
 *.svn/
@@ -11,3 +12,27 @@
 */build/*
 /build/*
 /classes/
+=======
+# Compiled class file
+*.class
+
+# Log file
+*.log
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+>>>>>>> 26d3457c4134a1c1f96707c4aace9b6c5e7afbb1
