@@ -2,7 +2,6 @@ package com.crescent.alert.engine;
 
 import com.crescent.alert.engine.provider.Event;
 import java.util.Map;
-import java.util.UUID;
 import lombok.Data;
 import lombok.NonNull;
 

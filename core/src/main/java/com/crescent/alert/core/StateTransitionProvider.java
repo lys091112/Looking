@@ -1,9 +1,9 @@
 package com.crescent.alert.core;
 
+import com.crescent.alert.common.config.PolicyInfo;
+import com.crescent.alert.common.config.PolicyInfo.Policy;
+import com.crescent.alert.common.config.PolicyInfo.PriorityStatus;
 import com.crescent.alert.common.exception.IllegalParamException;
-import com.crescent.alert.core.config.PolicyInfo;
-import com.crescent.alert.core.config.PolicyInfo.Policy;
-import com.crescent.alert.core.config.PolicyInfo.PriorityStatus;
 import com.crescent.alert.core.util.RuleParse;
 import com.crescent.alert.engine.provider.parse.RuleTemplate;
 import java.util.HashMap;

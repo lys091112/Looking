@@ -1,6 +1,6 @@
 package com.crescent.alert.core.dispatch.handler;
 
-import com.crescent.alert.core.collector.producer.LookingProducer;
+import com.crescent.alert.core.collector.producer.LookingProducerManager;
 import com.crescent.alert.core.domain.AlertEvent;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -8,9 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RuleViolationHandler extends RuleHandler {
 
-    private LookingProducer producer;
+    private LookingProducerManager producer;
 
-    public RuleViolationHandler(LookingProducer producer) {
+    public RuleViolationHandler(LookingProducerManager producer) {
         super(null);
         this.producer = producer;
     }

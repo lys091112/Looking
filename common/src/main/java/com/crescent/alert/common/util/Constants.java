@@ -20,4 +20,10 @@ public class Constants {
      */
     public final static String MATCHING_IGNORE_EVENT = "continueIgnoreEvent";
 
+    /**
+     * 数据存储key
+     */
+    public final static String KAFKA_CONSUMER_CONFIG = "lookingConsumerConfig";
+    public final static String KAFKA_PRODUCER_CONFIG = "lookingProducerConfig";
+
 }

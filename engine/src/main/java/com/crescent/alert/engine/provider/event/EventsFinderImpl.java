@@ -47,7 +47,7 @@ public class EventsFinderImpl extends EventsFinder {
             events = provider
                 .findEventsByTimeWindow(currentEvent.getStreamId(), currentEvent.getTimestamp() - duration.toMillis(),
                     currentEvent
-                .getTimestamp());
+                        .getTimestamp());
             if (totalMatching && !fitTimeBuffer(events, currentEvent.getTimestamp() - duration.toMillis(),
                 currentEvent.getTimestamp())) {
                 return Collections.emptyList();

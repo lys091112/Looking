@@ -3,13 +3,12 @@ package com.crescent.alert.core;
 import static com.crescent.alert.common.util.Constants.STATE_DURATION_SUFFIX;
 import static java.util.stream.Collectors.toMap;
 
+import com.crescent.alert.common.config.PolicyInfo;
+import com.crescent.alert.common.config.PolicyInfo.PriorityStatus;
 import com.crescent.alert.common.dto.Rule;
 import com.crescent.alert.common.util.Constants;
-import com.crescent.alert.core.config.PolicyInfo;
-import com.crescent.alert.core.config.PolicyInfo.PriorityStatus;
 import com.crescent.alert.core.util.RuleParse;
 import com.crescent.alert.engine.provider.parse.RuleTemplate;
-import com.sun.istack.internal.NotNull;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -61,8 +60,8 @@ public class RuleManager {
 
     private ConcurrentHashMap<String, Set<String>> ruleStreamMap = new ConcurrentHashMap<>();
 
-    public void registryRule(@NotNull Rule rule) {
-        if (CollectionUtils.isEmpty(rule.getInputStreams())) {
+    public void registryRule(Rule rule) {
+        if (null == rule || CollectionUtils.isEmpty(rule.getInputStreams())) {
             log.error("inputStreams can't be null");
             return;
         }

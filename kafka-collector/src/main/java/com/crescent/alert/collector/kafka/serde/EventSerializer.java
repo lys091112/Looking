@@ -1,4 +1,4 @@
-package com.crescent.alert.core.collector.serde;
+package com.crescent.alert.collector.kafka.serde;
 
 import com.crescent.alert.common.exception.ErrorCode;
 import com.crescent.alert.common.exception.UserSerializetaionException;

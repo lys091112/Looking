@@ -1,12 +1,12 @@
 package com.crescent.alert.core.dispatch.handler;
 
+import com.crescent.alert.common.config.PolicyInfo.Policy;
 import com.crescent.alert.common.enums.EventCategory;
 import com.crescent.alert.common.util.Constants;
 import com.crescent.alert.core.RuleManager;
 import com.crescent.alert.core.StateTransitionProvider;
-import com.crescent.alert.core.config.PolicyInfo.Policy;
-import com.crescent.alert.core.domain.AlertEvent;
 import com.crescent.alert.core.dispatch.provider.memory.EventsProvider;
+import com.crescent.alert.core.domain.AlertEvent;
 import com.crescent.alert.engine.provider.parse.RuleResult;
 import com.crescent.alert.engine.provider.parse.RuleTemplate;
 import java.util.HashMap;
