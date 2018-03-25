@@ -2,9 +2,14 @@ group 'com.crescent.alert'
 version '1.0-SNAPSHOT'
 
 dependencies {
-    compile "org.springframework.boot:spring-boot-starter-web:${SpringBoot_Version}"
+    compile("org.springframework.boot:spring-boot-starter-web:${SpringBoot_Version}") {
+//        exclude 'org.slf4j:log4j-over-slf4j'
+        exclude group: 'org.slf4j', module: 'log4j-over-slf4j'
+    }
     compile project(":common")
     compile project(":core")
+    compile project(":kafka-collector")
+
 
     testCompile "org.springframework.boot:spring-boot-starter-test:${SpringBoot_Version}"
 

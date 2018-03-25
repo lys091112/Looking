@@ -3,13 +3,13 @@ package com.crescent.alert.core.util;
 
 import static com.crescent.alert.engine.provider.parse.ParserEngineFactory.getParseEngine;
 
+import com.crescent.alert.common.config.PolicyInfo;
+import com.crescent.alert.common.config.PolicyInfo.Policy;
+import com.crescent.alert.common.config.PolicyInfo.PriorityStatus;
 import com.crescent.alert.common.dto.Rule;
 import com.crescent.alert.common.exception.InitializationException;
 import com.crescent.alert.core.RuleManager.TransGrammar;
 import com.crescent.alert.core.StateTransitionProvider;
-import com.crescent.alert.core.config.PolicyInfo;
-import com.crescent.alert.core.config.PolicyInfo.Policy;
-import com.crescent.alert.core.config.PolicyInfo.PriorityStatus;
 import com.crescent.alert.engine.provider.parse.RuleTemplate;
 import java.util.Collections;
 import java.util.Comparator;

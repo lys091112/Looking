@@ -3,4 +3,5 @@ include 'engine'
 include 'runner'
 include 'common'
 include 'core'
+include 'kafka-collector'
 

@@ -1,0 +1,11 @@
+group 'com.crescent.alert'
+version '1.0-SNAPSHOT'
+
+
+dependencies {
+    compile project(":common")
+    compile project(":core")
+    compile "org.apache.kafka:kafka-clients:${Kafka_Version}"
+    compile "org.apache.kafka:kafka_2.11:${Kafka_Version}"
+}
+

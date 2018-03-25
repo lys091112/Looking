@@ -1,12 +1,12 @@
 package com.crescent.alert.core.dispatch.handler;
 
+import com.crescent.alert.common.config.PolicyInfo.PriorityStatus;
 import com.crescent.alert.common.dto.Rule;
 import com.crescent.alert.common.enums.EventCategory;
 import com.crescent.alert.common.util.Constants;
 import com.crescent.alert.core.RuleManager;
 import com.crescent.alert.core.RuleManager.TransGrammar;
 import com.crescent.alert.core.StateTransitionProvider;
-import com.crescent.alert.core.config.PolicyInfo.PriorityStatus;
 import com.crescent.alert.core.dispatch.provider.BaseEventsProvider;
 import com.crescent.alert.core.domain.AlertEvent;
 import com.crescent.alert.engine.provider.parse.RuleResult;

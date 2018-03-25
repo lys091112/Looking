@@ -1,4 +1,4 @@
-package com.crescent.alert.core.config;
+package com.crescent.alert.common.config;
 
 import java.util.List;
 import lombok.Data;

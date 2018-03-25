@@ -3,7 +3,6 @@ package com.crescent.alert.engine.operands.aggregations;
 import com.crescent.alert.engine.operands.Operand;
 import com.crescent.alert.engine.operands.booleanExprs.IBooleanExpression;
 import com.crescent.alert.engine.provider.ProcessingContext;
-import java.util.Arrays;
 
 public class AvgOperand extends AggregationOperandBase {
 
