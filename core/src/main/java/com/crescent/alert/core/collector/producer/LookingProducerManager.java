@@ -43,13 +43,5 @@ public class LookingProducerManager {
         }
         sendQueue.forEach(sender -> sender.send(event));
 
-        if (!isValidEvent(event)) {
-            LOGGER.error("can't find producer by region {}", event.getRegion());
-            return;
-        }
-    }
-
-    private boolean isValidEvent(AlertEvent event) {
-        return producerMaps.containsKey(event.getRegion());
     }
 }

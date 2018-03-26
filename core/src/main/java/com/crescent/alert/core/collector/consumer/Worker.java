@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public abstract class AbstractConsumer implements Runnable {
+public abstract class Worker implements Runnable {
 
     @Getter
     private String name;
@@ -18,7 +18,7 @@ public abstract class AbstractConsumer implements Runnable {
 
     protected EventDispatcher dispatcher;
 
-    public AbstractConsumer(String name, EventDispatcher dispatcher) {
+    public Worker(String name, EventDispatcher dispatcher) {
         this.name = name;
         this.dispatcher = dispatcher;
     }
@@ -30,14 +30,14 @@ public abstract class AbstractConsumer implements Runnable {
         shutDown.wait();
     }
 
-    public abstract void consume();
+    public abstract void doWork();
 
     @Override
     public void run() {
         log.info("started! name:{}", name);
         try {
             while (running.get()) {
-                consume();
+                doWork();
             }
         } catch (Exception e) {
             running.set(false);

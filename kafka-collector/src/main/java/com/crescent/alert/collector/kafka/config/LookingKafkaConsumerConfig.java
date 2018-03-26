@@ -7,7 +7,6 @@ import lombok.Data;
 @ConfigPrefix("consumers")
 public class LookingKafkaConsumerConfig {
 
-    private String name;
     private String bootstrapServers;
     private String groupId;
     private String autoCommit;
@@ -16,5 +15,4 @@ public class LookingKafkaConsumerConfig {
     private String keySerializer;
     private String valueSerializer;
     private String topic;
-    private int threadNums;
 }

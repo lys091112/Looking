@@ -8,7 +8,9 @@ import java.util.List;
  */
 public interface LookingConsumer {
 
-    public void close();
+    void close();
 
-    public void init(List<ConsumerConfig> config, EventDispatcher dispatcher);
+    String consumerType();
+
+    void init(List<ConsumerConfig> config, EventDispatcher dispatcher);
 }

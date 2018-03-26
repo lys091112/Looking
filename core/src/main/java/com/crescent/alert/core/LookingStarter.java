@@ -1,13 +1,14 @@
 package com.crescent.alert.core;
 
 import com.crescent.alert.common.config.LookingConfig;
+import com.crescent.alert.common.config.LookingConfig.ConsumerConfig;
 import com.crescent.alert.common.config.PolicyInfo;
 import com.crescent.alert.common.exception.InitializationException;
 import com.crescent.alert.common.util.YmlConverter;
 import com.crescent.alert.core.collector.CollectorFactory;
 import com.crescent.alert.core.collector.consumer.LookingConsumer;
-import com.crescent.alert.core.collector.producer.LookingProducerManager;
 import com.crescent.alert.core.collector.consumer.NoEventConsumer;
+import com.crescent.alert.core.collector.producer.LookingProducerManager;
 import com.crescent.alert.core.dispatch.DefaultEventDispatcher;
 import com.crescent.alert.core.dispatch.EventDispatcher;
 import com.crescent.alert.core.dispatch.handler.RuleHandlerProvider;
@@ -89,10 +90,12 @@ public class LookingStarter {
     }
 
     public static void main(String[] args) throws Exception {
-//        LookingConfig lookingConfig = YmlConverter.config(new TypeReference<LookingConfig>() {
-//        }, "application.yml");
-//
+        LookingConfig lookingConfig = YmlConverter.config(new TypeReference<LookingConfig>() {
+        }, "application.yml");
+
 //        LookingStarter.getInstance().start(lookingConfig);
-//        System.out.println(lookingConfig);
+        ConsumerConfig config = lookingConfig.getConsumers().get(0);
+        System.out.println(config.getProperty());
+        System.out.println(lookingConfig);
     }
 }

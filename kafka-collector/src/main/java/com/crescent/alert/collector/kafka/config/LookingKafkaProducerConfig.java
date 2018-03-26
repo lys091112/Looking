@@ -1,7 +1,6 @@
 package com.crescent.alert.collector.kafka.config;
 
 import com.crescent.alert.common.util.ConfigPrefix;
-import java.util.List;
 import lombok.Data;
 import lombok.ToString;
 
@@ -16,5 +15,4 @@ public class LookingKafkaProducerConfig {
     private String valueSerializer;
     private String topic;
     private String clientId;
-    private List<String> regions;
 }
