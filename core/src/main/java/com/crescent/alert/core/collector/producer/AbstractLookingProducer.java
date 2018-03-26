@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 public abstract class AbstractLookingProducer implements LookingProducer {
 
     public void init(List<ProducerConfig> configs) {
-        init0(configs.stream().filter(config -> getProducerType().equalsIgnoreCase(config.getProducerType()))
+        init0(configs.stream().filter(config -> getProducerType().equalsIgnoreCase(config.getType()))
             .collect(Collectors.toList()));
 
     }

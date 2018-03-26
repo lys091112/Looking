@@ -21,8 +21,8 @@ public class LookingConfig {
 
         private String name;
         private int threadNums;
-        private String consumerType;
-        private Properties infos;
+        private String type;
+        private Properties property;
     }
 
     /**
@@ -33,7 +33,7 @@ public class LookingConfig {
     public static class ProducerConfig {
 
         private List<String> regions;
-        private String producerType;
-        private Properties infos;
+        private String type;
+        private Properties property;
     }
 }

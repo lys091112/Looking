@@ -9,13 +9,10 @@ import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_
 import com.crescent.alert.collector.kafka.config.LookingKafkaProducerConfig;
 import com.crescent.alert.common.config.LookingConfig.ProducerConfig;
 import com.crescent.alert.common.exception.InitializationException;
-import com.crescent.alert.common.util.Constants;
-import com.crescent.alert.common.util.JsonObjectConvertor;
+import com.crescent.alert.common.util.JsonObjectConverter;
 import com.google.common.base.Preconditions;
 import java.io.IOException;
 import java.util.Properties;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
@@ -29,22 +26,16 @@ public class KafkaSender<K, V> {
 
     private String topic;
 
-    public KafkaProducer<K, V> getProducer() {
-        return producer;
-    }
-
     public KafkaSender(ProducerConfig producerConfig) {
-        Preconditions.checkNotNull(producerConfig, "kafka producer config can't be empty");
-
-        String configStr = producerConfig.getInfos().getProperty(Constants.KAFKA_PRODUCER_CONFIG, "");
-        if (CollectionUtils.isEmpty(producerConfig.getRegions()) || StringUtils.isBlank(configStr)) {
-            LOGGER.error("producer config regine is empty! region:{}, info:{}", producerConfig.toString(), configStr);
-            throw new InitializationException("producer config regine is empty! region:" + producerConfig.getRegions());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("config info:{}", producerConfig);
         }
+        Preconditions.checkNotNull(producerConfig, "kafka producer config can't be empty");
+        Preconditions.checkNotNull(producerConfig.getProperty(), "producer properties can't be null");
 
         LookingKafkaProducerConfig config;
         try {
-            config = JsonObjectConvertor.readValue(configStr, LookingKafkaProducerConfig.class);
+            config = JsonObjectConverter.readValueWithObject(producerConfig.getProperty(), LookingKafkaProducerConfig.class);
         } catch (IOException e) {
             LOGGER.error("producer config regine is empty! region:{}", producerConfig.toString());
             throw new InitializationException("producer config regine is empty! region:" + producerConfig.getRegions());

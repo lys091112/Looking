@@ -12,23 +12,23 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZE
 import com.crescent.alert.collector.kafka.config.LookingKafkaConsumerConfig;
 import com.crescent.alert.common.config.LookingConfig.ConsumerConfig;
 import com.crescent.alert.common.exception.InitializationException;
-import com.crescent.alert.common.util.Constants;
-import com.crescent.alert.common.util.JsonObjectConvertor;
-import com.crescent.alert.core.collector.consumer.AbstractConsumer;
+import com.crescent.alert.common.util.JsonObjectConverter;
+import com.crescent.alert.core.collector.consumer.Worker;
 import com.crescent.alert.core.dispatch.EventDispatcher;
 import com.crescent.alert.core.domain.AlertEvent;
 import com.google.common.base.Preconditions;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Properties;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Slf4j
-public class KafkaConsumerImpl extends AbstractConsumer {
+public class KafkaConsumerImpl extends Worker {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaConsumerImpl.class);
 
     KafkaConsumer<String, AlertEvent> consumer;
 
@@ -36,21 +36,20 @@ public class KafkaConsumerImpl extends AbstractConsumer {
 
     public KafkaConsumerImpl(ConsumerConfig consumerConfig, EventDispatcher dispatcher) {
         super(consumerConfig.getName(), dispatcher);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("consumer info:{}", consumerConfig);
+        }
 
-        String name = config.getName();
+        String name = consumerConfig.getName();
         Preconditions.checkNotNull(name, "consumer name can't be empty");
         Preconditions.checkNotNull(name, "consumer info can't be null");
-        String configStr = consumerConfig.getInfos().getProperty(Constants.KAFKA_CONSUMER_CONFIG, "");
-        if (StringUtils.isBlank(configStr)) {
-            log.error("consumer properties info is empty! consumer name is {}", name);
-            throw new InitializationException("consumer properties info is empty! consumer name=" + name);
-        }
+        Preconditions.checkNotNull(consumerConfig.getProperty(), "consumer properties can't be null");
 
         LookingKafkaConsumerConfig config;
         try {
-            config = JsonObjectConvertor.readValue(configStr, LookingKafkaConsumerConfig.class);
+            config = JsonObjectConverter.readValueWithObject(consumerConfig.getProperty(), LookingKafkaConsumerConfig.class);
         } catch (IOException e) {
-            log.error("convert to LookingKafkaConsumerConfig from json error! consumer name is {}, error:{}", name, e);
+            LOGGER.error("convert to LookingKafkaConsumerConfig from json error! consumer name is {}, error:{}", name, e);
             throw new InitializationException("convert to LookingKafkaConsumerConfig from json error! consumer name=" + name);
         }
 
@@ -70,7 +69,7 @@ public class KafkaConsumerImpl extends AbstractConsumer {
     }
 
     @Override
-    public void consume() {
+    public void doWork() {
         ConsumerRecords<String, AlertEvent> records = consumer.poll(1000);
         for (ConsumerRecord<String, AlertEvent> record : records) {
             dispatcher.dispatcher(record.value());
