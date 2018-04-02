@@ -7,7 +7,7 @@ import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class DefaultEventsProvider extends AbstractEventsProvider {
+public class DefaultEventsProvider implements AbstractEventsProvider {
 
     private List<Event> events;
 

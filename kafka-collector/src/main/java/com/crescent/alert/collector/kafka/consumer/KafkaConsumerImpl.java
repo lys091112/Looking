@@ -1,25 +1,18 @@
 package com.crescent.alert.collector.kafka.consumer;
 
-import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG;
-import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG;
-import static org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG;
-import static org.apache.kafka.clients.consumer.ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG;
-import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG;
-import static org.apache.kafka.clients.consumer.ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG;
 
-import com.crescent.alert.collector.kafka.config.LookingKafkaConsumerConfig;
 import com.crescent.alert.common.config.LookingConfig.ConsumerConfig;
 import com.crescent.alert.common.exception.InitializationException;
-import com.crescent.alert.common.util.JsonObjectConverter;
 import com.crescent.alert.core.collector.consumer.Worker;
 import com.crescent.alert.core.dispatch.EventDispatcher;
 import com.crescent.alert.core.domain.AlertEvent;
 import com.google.common.base.Preconditions;
-import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -32,40 +25,30 @@ public class KafkaConsumerImpl extends Worker {
 
     KafkaConsumer<String, AlertEvent> consumer;
 
-    private LookingKafkaConsumerConfig config;
-
     public KafkaConsumerImpl(ConsumerConfig consumerConfig, EventDispatcher dispatcher) {
         super(consumerConfig.getName(), dispatcher);
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("consumer info:{}", consumerConfig);
+            LOGGER.debug("Consumer info:{}", consumerConfig);
         }
 
         String name = consumerConfig.getName();
-        Preconditions.checkNotNull(name, "consumer name can't be empty");
-        Preconditions.checkNotNull(name, "consumer info can't be null");
-        Preconditions.checkNotNull(consumerConfig.getProperty(), "consumer properties can't be null");
+        Preconditions.checkNotNull(name, "Consumer name can't be empty");
+        Preconditions.checkNotNull(name, "Consumer info can't be null");
+        Preconditions.checkNotNull(consumerConfig.getProperty(), "Consumer properties can't be null");
 
-        LookingKafkaConsumerConfig config;
-        try {
-            config = JsonObjectConverter.readValueWithObject(consumerConfig.getProperty(), LookingKafkaConsumerConfig.class);
-        } catch (IOException e) {
-            LOGGER.error("convert to LookingKafkaConsumerConfig from json error! consumer name is {}, error:{}", name, e);
-            throw new InitializationException("convert to LookingKafkaConsumerConfig from json error! consumer name=" + name);
+        String t = consumerConfig.getProperty().getProperty("topics");
+        if (StringUtils.isBlank(t)) {
+            throw new InitializationException("The topic property can not be found from the configuration file! consumer name=" +
+                name);
         }
+        List<String> topics = Arrays.asList(t.split(","));
 
-        Properties props = new Properties();
-        props.put(BOOTSTRAP_SERVERS_CONFIG, config.getBootstrapServers());
-        props.put(GROUP_ID_CONFIG, config.getGroupId());
-        props.put(ENABLE_AUTO_COMMIT_CONFIG, config.getAutoCommit());
-        props.put(AUTO_COMMIT_INTERVAL_MS_CONFIG, config.getAutoCommitIntervalMs());
-        props.put(SESSION_TIMEOUT_MS_CONFIG, config.getSessionTimeoutMs());
-        props.put(KEY_DESERIALIZER_CLASS_CONFIG, config.getKeySerializer());
-        props.put(VALUE_DESERIALIZER_CLASS_CONFIG, config.getValueSerializer());
-        props.put(AUTO_OFFSET_RESET_CONFIG, "latest");
+        Properties props = consumerConfig.getProperty();
+        props.put(KEY_DESERIALIZER_CLASS_CONFIG, "com.crescent.alert.collector.kafka.serde.EventDeserializer");
+        props.put(VALUE_DESERIALIZER_CLASS_CONFIG, "com.crescent.alert.collector.kafka.serde.EventDeserializer");
 
         consumer = new KafkaConsumer<>(props);
-        consumer.subscribe(Arrays.asList(config.getTopic()));
-        this.config = config;
+        consumer.subscribe(topics);
     }
 
     @Override

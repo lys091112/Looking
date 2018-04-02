@@ -12,23 +12,23 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LookingProducerManager {
+public class Sender {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(LookingProducerManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Sender.class);
 
     private List<LookingProducer> producers = new ArrayList<>();
 
     private Map<String, List<LookingProducer>> producerMaps = new ConcurrentHashMap<>();
 
-    public LookingProducerManager(List<LookingProducer> producers) {
-        Preconditions.checkNotNull(producers, "producer configs is empty");
-        Preconditions.checkArgument(producers.size() > 0, "producer configs is empty");
+    public Sender(List<LookingProducer> producers) {
+        Preconditions.checkNotNull(producers, "Producer configs is empty");
+        Preconditions.checkArgument(producers.size() > 0, "Producer configs is empty");
         this.producers = producers;
     }
 
     public void send(AlertEvent event) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("send info: {}", event);
+            LOGGER.debug("Send info: {}", event);
         }
         List<LookingProducer> sendQueue;
         if (producerMaps.containsKey(event.getRegion())) {
@@ -39,7 +39,7 @@ public class LookingProducerManager {
         }
 
         if (CollectionUtils.isEmpty(sendQueue)) {
-            throw new NotFountException("can't find producer to send event msg! region:" + event.getRegion());
+            throw new NotFountException("Can't find producer to send event msg! region:" + event.getRegion());
         }
         sendQueue.forEach(sender -> sender.send(event));
 

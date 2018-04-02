@@ -5,24 +5,23 @@ consumers:
     name: KafkaConsumerTest
     threadNums: 4
     property:
-      bootstrapServers: localhost:9092
-      groupId: test-consumer-group
-      autoCommit: true
-      autoCommitIntervalMs: 10000
-      sessionTimeoutMs: 30000
-      keySerializer: org.apache.kafka.common.serialization.StringDeserializer
-      valueSerializer: com.crescent.alert.core.collector.serde.EventDeserializer
-      topic: as_jl_event
+      bootstrap.servers: localhost:9092
+      group.id: test-consumer-group
+      enable.auto.commit: true
+      auto.commit.interval.ms: 10000
+      session.timeout.ms: 30000
+      auto.offset.reset: latest
+      topics: as_jl_event,as_jl_alert
 
 producers:
   - type: kafka
     regions:
       - default_region
     property:
-      bootstrapServers: localhost:9092
-      maxBlockMs: 5000
-      keySerializer: org.apache.kafka.common.serialization.StringSerializer
-      valueSerializer: com.crescent.alert.core.collector.serde.EventSerializer
-      topic: as_jl_alert
-      clientId: default-producer
+      bootstrap.servers: localhost:9092
+      max.block.ms: 5000
+      topics: as_jl_alert
+      client.id: default-producer
+
+eventWindowType: memory
 

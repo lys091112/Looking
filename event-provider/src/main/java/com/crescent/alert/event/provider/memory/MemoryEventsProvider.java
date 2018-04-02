@@ -1,4 +1,4 @@
-package com.crescent.alert.core.dispatch.provider.memory;
+package com.crescent.alert.event.provider.memory;
 
 import static java.util.stream.StreamSupport.stream;
 
@@ -15,7 +15,10 @@ import java.util.stream.Collectors;
  * TODO {crescent} 数据遍历需要优化，尽可能高效的查询
  * shit code
  */
-public class EventsProvider extends BaseEventsProvider {
+public class MemoryEventsProvider extends BaseEventsProvider {
+
+    public MemoryEventsProvider() {
+    }
 
     private int rate = 3;
 
@@ -78,11 +81,15 @@ public class EventsProvider extends BaseEventsProvider {
     }
 
     @Override
-    public void clear(Event event) {
-        if (events.containsKey(event.getStreamId())) {
-            events.get(event.getStreamId()).clear();
-            events.get(event.getStreamId()).add(event);
+    public void clear(String streamId) {
+        if (events.containsKey(streamId)) {
+            events.get(streamId).clear();
         }
+    }
+
+    @Override
+    public String eventWindowType() {
+        return "memory";
     }
 
     @Override

@@ -17,20 +17,11 @@ import org.apache.commons.lang3.tuple.Pair;
 @Slf4j
 public class StateTransitionProvider {
 
-    private StateTransitionProvider() {
-    }
-
-    private static StateTransitionProvider instance = new StateTransitionProvider();
-
-    public static StateTransitionProvider getInstance() {
-        return instance;
-    }
-
     private Map<String, PriorityStatus> priorityStatuses = new HashMap<>();
     private Map<PriorityStatus, List<Pair<String, RuleTemplate>>> fixedRuleTemplates;
-    private Map<String, Policy> policys = new HashMap<>();
+    private Map<String, Policy> policies = new HashMap<>();
 
-    public void init(PolicyInfo policyInfo) {
+    public StateTransitionProvider(PolicyInfo policyInfo) {
         if (null == policyInfo) {
             throw new IllegalParamException("初始化自定义告警转化规则失败! file: policies.json");
         }
@@ -38,7 +29,7 @@ public class StateTransitionProvider {
         priorityStatuses = policyInfo.getPriorityStatus().stream()
             .collect(Collectors.toMap(s -> s.getSeverity(), s -> s));
         fixedRuleTemplates = RuleParse.parsePolicyState(policyInfo);
-        policys = policyInfo.getPolicies().stream()
+        policies = policyInfo.getPolicies().stream()
             .collect(Collectors.toMap(p -> p.getSeverity(), p -> p));
         log.info("initialize policy information success!");
     }
@@ -49,7 +40,7 @@ public class StateTransitionProvider {
     }
 
     public Policy findPolicy(String severity) {
-        return Optional.ofNullable(policys.get(severity)).orElseThrow(() -> new IllegalArgumentException
+        return Optional.ofNullable(policies.get(severity)).orElseThrow(() -> new IllegalArgumentException
             ("invalid health violation! status:" + severity));
 
     }

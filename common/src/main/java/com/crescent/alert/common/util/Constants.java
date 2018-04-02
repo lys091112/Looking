@@ -5,8 +5,6 @@ public class Constants {
     public final static String CONTINUE_DURATION = "continue_duration_time";
     public final static String STATE_DURATION_SUFFIX = "_duration_time";
 
-    public final static String DEFAULT_REGION = "default_region";
-
     public final static String SEVERITY_VARIABLE = "severity";
 
     /**
@@ -18,6 +16,6 @@ public class Constants {
     /**
      * 全量匹配时，对于有该标识的事件需要忽略
      */
-    public final static String MATCHING_IGNORE_EVENT = "continueIgnoreEvent";
+    public final static String CONTINUE_IGNORE_EVENT = "continueIgnoreEvent";
 
 }

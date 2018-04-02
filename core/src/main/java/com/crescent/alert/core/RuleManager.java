@@ -27,12 +27,12 @@ import org.apache.commons.lang3.tuple.Pair;
 @Slf4j
 public class RuleManager {
 
-    private RuleManager() {
-    }
-
-    public static RuleManager getInstance() {
-        return RuleManagementCreator.RULE_MANAGER.getInstance();
-    }
+//    private RuleManager() {
+//    }
+//
+//    public static RuleManager getInstance() {
+//        return RuleManagementCreator.RULE_MANAGER.getInstance();
+//    }
 
     /**
      * 存储Rule数据
@@ -60,12 +60,12 @@ public class RuleManager {
 
     private ConcurrentHashMap<String, Set<String>> ruleStreamMap = new ConcurrentHashMap<>();
 
-    public void registryRule(Rule rule) {
+    public void registryRule(Rule rule, PriorityStatus priorityStatus) {
         if (null == rule || CollectionUtils.isEmpty(rule.getInputStreams())) {
             log.error("inputStreams can't be null");
             return;
         }
-        List<TransGrammar> grammars = RuleParse.parseRuleOrderByPriorityLevel(rule);
+        List<TransGrammar> grammars = RuleParse.parseRuleOrderByPriorityLevel(rule, priorityStatus);
         ruleTemplates.put(rule.getRuleId(), grammars);
         ruleDatas.put(rule.getRuleId(), rule);
         statePeriods(rule, grammars);
@@ -170,18 +170,18 @@ public class RuleManager {
         return Optional.ofNullable(ruleDatas.get(ruleId));
     }
 
-    public enum RuleManagementCreator {
-        RULE_MANAGER;
-        private RuleManager manager;
-
-        RuleManagementCreator() {
-            this.manager = new RuleManager();
-        }
-
-        public RuleManager getInstance() {
-            return manager;
-        }
-    }
+//    public enum RuleManagementCreator {
+//        RULE_MANAGER;
+//        private RuleManager manager;
+//
+//        RuleManagementCreator() {
+//            this.manager = new RuleManager();
+//        }
+//
+//        public RuleManager getInstance() {
+//            return manager;
+//        }
+//    }
 
     @Data
     public static class TransGrammar {

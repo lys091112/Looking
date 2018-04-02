@@ -1,6 +1,5 @@
 package com.crescent.alert.common.config;
 
-import com.crescent.alert.common.util.ConfigPrefix;
 import java.util.List;
 import java.util.Properties;
 import lombok.Data;
@@ -15,8 +14,9 @@ public class LookingConfig {
 
     private List<ProducerConfig> producers;
 
+    private String eventWindowType;
+
     @Data
-    @ConfigPrefix("consumers")
     public static class ConsumerConfig {
 
         private String name;
@@ -29,7 +29,6 @@ public class LookingConfig {
      */
     @Data
     @ToString
-    @ConfigPrefix("producers")
     public static class ProducerConfig {
 
         private List<String> regions;

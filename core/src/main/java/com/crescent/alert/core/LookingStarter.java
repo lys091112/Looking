@@ -8,10 +8,12 @@ import com.crescent.alert.common.util.YmlConverter;
 import com.crescent.alert.core.collector.CollectorFactory;
 import com.crescent.alert.core.collector.consumer.LookingConsumer;
 import com.crescent.alert.core.collector.consumer.NoEventConsumer;
-import com.crescent.alert.core.collector.producer.LookingProducerManager;
 import com.crescent.alert.core.dispatch.DefaultEventDispatcher;
 import com.crescent.alert.core.dispatch.EventDispatcher;
-import com.crescent.alert.core.dispatch.handler.RuleHandlerProvider;
+import com.crescent.alert.core.dispatch.handler.RuleHandler;
+import com.crescent.alert.core.dispatch.handler.RuleRawMetricHandler;
+import com.crescent.alert.core.dispatch.provider.BaseEventsProvider;
+import com.crescent.alert.core.dispatch.provider.EventProviderFactory;
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.IOException;
 import java.util.List;
@@ -28,20 +30,17 @@ public class LookingStarter {
     private AtomicBoolean running = new AtomicBoolean(false);
 
 
-    ScheduledExecutorService noEventExecutor;
+    private ScheduledExecutorService noEventExecutor;
 
     @Setter
-    private EventDispatcher dispatcher = new DefaultEventDispatcher(RuleHandlerProvider.defaultRuleHandler(null));
+    private EventDispatcher dispatcher;
 
-    private static LookingStarter starter = new LookingStarter();
 
-    List<LookingConsumer> consumers;
+    private List<LookingConsumer> consumers;
 
-    private LookingStarter() {
-    }
+    private AlertProvider alertProvider;
 
-    public static LookingStarter getInstance() {
-        return starter;
+    public LookingStarter() {
     }
 
     public void start(LookingConfig lookingConfig) throws Exception {
@@ -52,15 +51,19 @@ public class LookingStarter {
             return;
         }
 
-        StateTransitionProvider.getInstance().init(loadPolicyInfo());
+        alertProvider = new AlertProvider(loadPolicyInfo(), CollectorFactory.createSender(lookingConfig.getProducers()));
 
-        // initial producer
-        LookingProducerManager producer = new LookingProducerManager(
-            CollectorFactory.createProducers(lookingConfig.getProducers()));
-        dispatcher = new DefaultEventDispatcher(RuleHandlerProvider.defaultRuleHandler(producer));
+        RuleHandler ruleHandler = new RuleRawMetricHandler(alertProvider, new EventProviderFactory() {
+            @Override
+            public BaseEventsProvider createEventProvider() {
+                return createEventProvider(alertProvider, lookingConfig.getEventWindowType());
+            }
+        });
 
-        // 这里需要保证的是，所属ruleId相同的event只能被同一个worker消费，保证不会有
-        // 多线程竞争问题
+        // 创建数据分发器
+        dispatcher = new DefaultEventDispatcher(alertProvider, ruleHandler);
+
+        // 这里需要保证的是，所属ruleId相同的event只能被同一个worker消费，保证不会有多线程竞争问题
         consumers = CollectorFactory.createConsumers(lookingConfig.getConsumers(), dispatcher);
 
         noEventExecutor.scheduleAtFixedRate(new NoEventConsumer(dispatcher), 0, 60, TimeUnit.SECONDS);
@@ -68,10 +71,10 @@ public class LookingStarter {
 
     private void checkConfig(LookingConfig lookingConfig) {
         if (CollectionUtils.isEmpty(lookingConfig.getConsumers())) {
-            throw new InitializationException("initialize consumer properties error, configs is empty!");
+            throw new InitializationException("Initialize consumer properties error, configs is empty!");
         }
         if (CollectionUtils.isEmpty(lookingConfig.getProducers())) {
-            throw new InitializationException("initialize producers properties error, configs is empty!");
+            throw new InitializationException("Initialize producers properties error, configs is empty!");
         }
     }
 
@@ -93,7 +96,6 @@ public class LookingStarter {
         LookingConfig lookingConfig = YmlConverter.config(new TypeReference<LookingConfig>() {
         }, "application.yml");
 
-//        LookingStarter.getInstance().start(lookingConfig);
         ConsumerConfig config = lookingConfig.getConsumers().get(0);
         System.out.println(config.getProperty());
         System.out.println(lookingConfig);

@@ -4,34 +4,32 @@ import com.crescent.alert.common.config.PolicyInfo.PriorityStatus;
 import com.crescent.alert.common.dto.Rule;
 import com.crescent.alert.common.enums.EventCategory;
 import com.crescent.alert.common.util.Constants;
-import com.crescent.alert.core.RuleManager;
+import com.crescent.alert.core.AlertProvider;
 import com.crescent.alert.core.RuleManager.TransGrammar;
-import com.crescent.alert.core.StateTransitionProvider;
 import com.crescent.alert.core.dispatch.provider.BaseEventsProvider;
+import com.crescent.alert.core.dispatch.provider.EventProviderFactory;
 import com.crescent.alert.core.domain.AlertEvent;
 import com.crescent.alert.engine.provider.parse.RuleResult;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 public class RuleRawMetricHandler extends RuleHandler {
 
     private BaseEventsProvider eventsProvider;
 
-    public RuleRawMetricHandler(RuleHandler childHandler, BaseEventsProvider eventsProvider) {
-        super(childHandler);
-        this.eventsProvider = eventsProvider;
+    public RuleRawMetricHandler(AlertProvider alertProvider, EventProviderFactory factory) {
+        super(alertProvider, new RuleHealthStatusHandler(alertProvider, factory));
+        this.eventsProvider = factory.createEventProvider();
     }
 
     @Override
     protected Optional<AlertEvent> handle(AlertEvent event) {
-        Optional<List<TransGrammar>> optional = RuleManager.getInstance().getRuleTemplates(event.getRuleId());
-        Optional<Rule> ruleOptional = RuleManager.getInstance().getRule(event.getRuleId());
+        Optional<List<TransGrammar>> optional = alertProvider.getRuleManager().getRuleTemplates(event.getRuleId());
+        Optional<Rule> ruleOptional = alertProvider.getRuleManager().getRule(event.getRuleId());
         if (!optional.isPresent() || !ruleOptional.isPresent()) {
-            log.error("can't find ruleTemplates by RuleId. ruleId={}", event.getRuleId());
+            LOGGER.error("Can't find ruleTemplates by ruleId. ruleId={}", event.getRuleId());
             return Optional.empty();
         }
 
@@ -46,9 +44,9 @@ public class RuleRawMetricHandler extends RuleHandler {
             }
         }
 
-        Optional<PriorityStatus> defaultStatus = StateTransitionProvider.getInstance().findDefaultStatus();
+        Optional<PriorityStatus> defaultStatus = alertProvider.getStateTransitionProvider().findDefaultStatus();
         if (!defaultStatus.isPresent()) {
-            log.warn("can't find default priorityStatus!");
+            LOGGER.error("Can't find default priorityStatus!");
             return Optional.empty();
         }
 

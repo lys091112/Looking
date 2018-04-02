@@ -1,6 +1,6 @@
 package com.crescent.alert.engine.provider.event;
 
-import static com.crescent.alert.common.util.Constants.MATCHING_IGNORE_EVENT;
+import static com.crescent.alert.common.util.Constants.CONTINUE_IGNORE_EVENT;
 
 import com.crescent.alert.common.util.Constants;
 import com.crescent.alert.engine.provider.Event;
@@ -32,8 +32,8 @@ public class EventsFinderImpl extends EventsFinder {
             throw new IllegalArgumentException("BoundingBox instance not found");
         }
 
-        boolean totalMatching = !(null != params && "false".equalsIgnoreCase(params.getOrDefault(Constants
-            .TOTAL_MATCHING, "")));
+        // 判断是否需要全量匹配event buffer数据
+        boolean totalMatching = null == params || "true".equalsIgnoreCase(params.getOrDefault(Constants.TOTAL_MATCHING, ""));
 
         List<Event> events;
         if (boundingBox instanceof SizeBoundingBox) {
@@ -56,9 +56,10 @@ public class EventsFinderImpl extends EventsFinder {
             throw new IllegalArgumentException("Invalid BoundingBox Type");
         }
 
+        // 忽略掉由CONTINUE_IGNORE_EVENT标识的事件
         if (totalMatching) {
             events = events.stream()
-                .filter(e -> !"true".equalsIgnoreCase(e.getMetrics().getOrDefault(MATCHING_IGNORE_EVENT, "")))
+                .filter(e -> !"true".equalsIgnoreCase(e.getMetrics().getOrDefault(CONTINUE_IGNORE_EVENT, "")))
                 .collect(Collectors.toList());
         }
 

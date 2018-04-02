@@ -5,6 +5,7 @@ import com.crescent.alert.common.config.LookingConfig.ProducerConfig;
 import com.crescent.alert.common.exception.InitializationException;
 import com.crescent.alert.core.collector.consumer.LookingConsumer;
 import com.crescent.alert.core.collector.producer.LookingProducer;
+import com.crescent.alert.core.collector.producer.Sender;
 import com.crescent.alert.core.dispatch.EventDispatcher;
 import com.google.common.base.Preconditions;
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ public class CollectorFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CollectorFactory.class);
 
-    public static List<LookingProducer> createProducers(List<ProducerConfig> configs) {
+    public static Sender createSender(List<ProducerConfig> configs) {
         Preconditions.checkNotNull(configs, "producer configs is empty");
         Preconditions.checkArgument(configs.size() > 0, "producer configs is empty");
 
@@ -31,11 +32,10 @@ public class CollectorFactory {
             res.add(producer);
         }
         if (res.isEmpty()) {
-            LOGGER.error("No LookingProducer Impl can be found with ServiceLoader, please check your dependencies");
             throw new InitializationException(
                 "No LookingProducer Impl can be found with ServiceLoader, please check your dependencies");
         }
-        return res;
+        return new Sender(res);
     }
 
 

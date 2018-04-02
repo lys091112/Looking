@@ -9,7 +9,6 @@ import com.crescent.alert.common.config.PolicyInfo.PriorityStatus;
 import com.crescent.alert.common.dto.Rule;
 import com.crescent.alert.common.exception.InitializationException;
 import com.crescent.alert.core.RuleManager.TransGrammar;
-import com.crescent.alert.core.StateTransitionProvider;
 import com.crescent.alert.engine.provider.parse.RuleTemplate;
 import java.util.Collections;
 import java.util.Comparator;
@@ -30,11 +29,11 @@ public class RuleParse {
 
 
     // TODO 添加异常处理
-    public static List<TransGrammar> parseRuleOrderByPriorityLevel(Rule rule) {
-        List<TransGrammar> rules = rule.getMatchingGrammar().stream().map(grammar -> {
-            PriorityStatus priorityStatus = StateTransitionProvider.getInstance().findStatus(grammar.getState());
-            return new TransGrammar(grammar.getParamters(), getParseEngine().parse(grammar.getDsl()), priorityStatus);
-        }).collect(Collectors.toList());
+    public static List<TransGrammar> parseRuleOrderByPriorityLevel(Rule rule, PriorityStatus priorityStatus) {
+//            PriorityStatus priorityStatus = StateTransitionProvider.getInstance().findStatus(grammar.getState());
+        List<TransGrammar> rules = rule.getMatchingGrammar().stream()
+            .map(grammar -> new TransGrammar(grammar.getParamters(), getParseEngine().parse(grammar.getDsl()), priorityStatus))
+            .collect(Collectors.toList());
 
         Collections.sort(rules, Comparator.comparingInt(grammar -> grammar.getPriorityStatus().getPriorityLevel()));
         return rules;
@@ -46,7 +45,7 @@ public class RuleParse {
     public static Map<PriorityStatus, List<Pair<String, RuleTemplate>>> parsePolicyState(
         PolicyInfo policyInfo) {
         if (CollectionUtils.isEmpty(policyInfo.getPriorityStatus())) {
-            throw new InitializationException("initial policies info error!");
+            throw new InitializationException("Initial policies info error!");
         }
 
         return policyInfo.getPriorityStatus().stream()
@@ -61,13 +60,13 @@ public class RuleParse {
 
     private static Policy findSeverityDsl(PolicyInfo infos, String severity) {
         if (CollectionUtils.isEmpty(infos.getPolicies())) {
-            log.warn("can't find policies from policyInfo ");
-            throw new InitializationException("initial policies info error!");
+            log.warn("Can't find policies from policyInfo ");
+            throw new InitializationException("Initial policies info error!");
         }
         return infos.getPolicies().stream()
             .filter(policy -> policy.getSeverity().equalsIgnoreCase(severity))
             .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("invaild severity! severity=" + severity));
+            .orElseThrow(() -> new IllegalArgumentException("Invalid severity! severity=" + severity));
     }
 
 }

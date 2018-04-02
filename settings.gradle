@@ -4,4 +4,5 @@ include 'runner'
 include 'common'
 include 'core'
 include 'kafka-collector'
+include 'event-provider'
 

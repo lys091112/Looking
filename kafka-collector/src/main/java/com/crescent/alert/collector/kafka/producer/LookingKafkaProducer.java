@@ -20,7 +20,7 @@ public class LookingKafkaProducer extends AbstractLookingProducer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LookingProducer.class);
 
-    private Map<String, KafkaSender> producers = new ConcurrentHashMap<>();
+    private Map<String, KafkaSenderImpl> producers = new ConcurrentHashMap<>();
 
     private Set<String> regions = new HashSet<>();
 
@@ -33,7 +33,7 @@ public class LookingKafkaProducer extends AbstractLookingProducer {
 
         for (ProducerConfig config : configs) {
 
-            KafkaSender<String, AlertEvent> producer = new KafkaSender(config);
+            KafkaSenderImpl<String, AlertEvent> producer = new KafkaSenderImpl(config);
 
             for (String region : config.getRegions()) {
                 producers.putIfAbsent(region, producer);

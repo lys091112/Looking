@@ -8,8 +8,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
 import org.apache.kafka.common.serialization.Serializer;
 
-/**
- */
 public class EventSerializer implements Serializer<AlertEvent> {
 
     ObjectMapper objectMapper = new ObjectMapper();
