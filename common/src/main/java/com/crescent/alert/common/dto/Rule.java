@@ -51,7 +51,7 @@ public class Rule {
         /**
          * dsl 参数
          */
-        private Map<String, String> paramters;
+        private Map<String, String> parameters;
 
         private String dsl;
     }

@@ -17,5 +17,5 @@ public abstract class EventsFinder {
 
     protected BoundingBox boundingBox;
 
-    public abstract List<Event> backwardFrom(Event event, Map<String, String> params, AbstractEventsProvider provider);
+    public abstract List<Event> backwardFrom(Event event, Map<String, String> params, IEventsProvider provider);
 }

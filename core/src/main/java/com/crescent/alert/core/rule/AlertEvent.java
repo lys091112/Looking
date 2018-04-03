@@ -1,4 +1,4 @@
-package com.crescent.alert.core.domain;
+package com.crescent.alert.core.rule;
 
 import com.crescent.alert.common.enums.EventCategory;
 import com.crescent.alert.engine.provider.Event;

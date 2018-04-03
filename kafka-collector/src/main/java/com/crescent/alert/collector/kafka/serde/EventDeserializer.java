@@ -2,7 +2,7 @@ package com.crescent.alert.collector.kafka.serde;
 
 import com.crescent.alert.common.exception.ErrorCode;
 import com.crescent.alert.common.exception.UserDeserializetaionException;
-import com.crescent.alert.core.domain.AlertEvent;
+import com.crescent.alert.core.rule.AlertEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
 import org.apache.kafka.common.serialization.Deserializer;

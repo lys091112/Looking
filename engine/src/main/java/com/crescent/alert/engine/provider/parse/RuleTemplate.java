@@ -8,7 +8,7 @@ import com.crescent.alert.engine.operands.aggregations.AggregationOperandBase;
 import com.crescent.alert.engine.operands.booleanExprs.IBooleanExpression;
 import com.crescent.alert.engine.provider.Event;
 import com.crescent.alert.engine.provider.ProcessingContext;
-import com.crescent.alert.engine.provider.event.AbstractEventsProvider;
+import com.crescent.alert.engine.provider.event.IEventsProvider;
 import com.crescent.alert.engine.provider.event.EventsFinder;
 import com.crescent.alert.engine.provider.event.boundingBox.BoundingBox;
 import com.crescent.alert.engine.provider.event.boundingBox.SizeBoundingBox;
@@ -41,7 +41,7 @@ public class RuleTemplate {
 
     private final EventsFinder eventsFinder;
 
-    public RuleResult getResult(Event currEvent, AbstractEventsProvider provider, Map<String, String> params) {
+    public RuleResult getResult(Event currEvent, IEventsProvider provider, Map<String, String> params) {
         try {
             List<Event> events = findEvents(currEvent, provider, params);
             if (CollectionUtils.isEmpty(events)) {
@@ -69,10 +69,10 @@ public class RuleTemplate {
             return Pair.of(((SizeBoundingBox) boundingBox).getSize(), null);
 
         }
-        throw new UnsupportedOperationException("unknown bounding box type!");
+        throw new UnsupportedOperationException("Unknown bounding box type!");
     }
 
-    private List<Event> findEvents(Event currEvent, AbstractEventsProvider provider, Map<String, String> params)
+    private List<Event> findEvents(Event currEvent, IEventsProvider provider, Map<String, String> params)
         throws IllegalArgumentException {
         if (null == eventsFinder) {
             return Collections.emptyList();
@@ -82,9 +82,8 @@ public class RuleTemplate {
 
     public RuleResult getResult(Event currEvent, List<Event> events, Map<String, String> params) {
         try {
-            List<Event> fileterEvents = filterByKeys(currEvent, events);
-            if (this.getWhereClause().getValue(new ProcessingContext(currEvent, fileterEvents, params))) {
-                return new RuleResult(true, getContext(currEvent, fileterEvents, params));
+            if (this.getWhereClause().getValue(new ProcessingContext(currEvent, events, params))) {
+                return new RuleResult(true, getContext(currEvent, events, params));
             }
         } catch (NotFoundException e) {
             // 对于不存在的监控字段,不触发告警，直接返回false
@@ -116,7 +115,7 @@ public class RuleTemplate {
             } else if (AliasOperand.class.isInstance(op)) {
                 return ((AliasOperand) op).getAlias();
             }
-            throw new RuntimeException("use an aggregation function as a column should specify an alias: " + op);
+            throw new RuntimeException("Use an aggregation function as a column should specify an alias: " + op);
         }, op -> {
             try {
                 return op.getValue(new ProcessingContext(currEvent, filterByKeys(currEvent, events), params))

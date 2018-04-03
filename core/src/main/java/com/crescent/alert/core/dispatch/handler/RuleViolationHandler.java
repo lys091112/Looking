@@ -1,9 +1,8 @@
 package com.crescent.alert.core.dispatch.handler;
 
-import com.crescent.alert.core.AlertProvider;
 import com.crescent.alert.core.collector.producer.Sender;
-import com.crescent.alert.core.dispatch.provider.EventProviderFactory;
-import com.crescent.alert.core.domain.AlertEvent;
+import com.crescent.alert.core.rule.AlertEvent;
+import com.crescent.alert.core.rule.RuleProvider;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 
@@ -12,9 +11,9 @@ public class RuleViolationHandler extends RuleHandler {
 
     private Sender sender;
 
-    public RuleViolationHandler(AlertProvider alertProvider, EventProviderFactory factory) {
-        super(alertProvider, null);
-        this.sender = alertProvider.getSender();
+    public RuleViolationHandler(RuleProvider ruleProvider, Sender sender) {
+        super(ruleProvider);
+        this.sender = sender;
 
     }
 

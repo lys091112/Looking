@@ -4,11 +4,12 @@ package com.crescent.alert.core.util;
 import static com.crescent.alert.engine.provider.parse.ParserEngineFactory.getParseEngine;
 
 import com.crescent.alert.common.config.PolicyInfo;
+import com.crescent.alert.common.config.PolicyInfo.OriginStatus;
 import com.crescent.alert.common.config.PolicyInfo.Policy;
-import com.crescent.alert.common.config.PolicyInfo.PriorityStatus;
 import com.crescent.alert.common.dto.Rule;
 import com.crescent.alert.common.exception.InitializationException;
-import com.crescent.alert.core.RuleManager.TransGrammar;
+import com.crescent.alert.core.rule.RuleProvider.TransGrammar;
+import com.crescent.alert.core.rule.StateTransitionProvider;
 import com.crescent.alert.engine.provider.parse.RuleTemplate;
 import java.util.Collections;
 import java.util.Comparator;
@@ -29,27 +30,29 @@ public class RuleParse {
 
 
     // TODO 添加异常处理
-    public static List<TransGrammar> parseRuleOrderByPriorityLevel(Rule rule, PriorityStatus priorityStatus) {
-//            PriorityStatus priorityStatus = StateTransitionProvider.getInstance().findStatus(grammar.getState());
+    public static List<TransGrammar> parseRuleOrderByPriorityLevel(StateTransitionProvider transitionProvider, Rule rule) {
         List<TransGrammar> rules = rule.getMatchingGrammar().stream()
-            .map(grammar -> new TransGrammar(grammar.getParamters(), getParseEngine().parse(grammar.getDsl()), priorityStatus))
+            .map(grammar -> {
+                OriginStatus originStatus = transitionProvider.findStatus(grammar.getState());
+                return new TransGrammar(grammar.getParameters(), getParseEngine().parse(grammar.getDsl()), originStatus);
+            })
             .collect(Collectors.toList());
 
-        Collections.sort(rules, Comparator.comparingInt(grammar -> grammar.getPriorityStatus().getPriorityLevel()));
+        Collections.sort(rules, Comparator.comparingInt(grammar -> grammar.getOriginStatus().getPriorityLevel()));
         return rules;
     }
 
     /**
      * 获取状态转换的dsl语法解析，以及相关间的关联关系
      */
-    public static Map<PriorityStatus, List<Pair<String, RuleTemplate>>> parsePolicyState(
+    public static Map<OriginStatus, List<Pair<String, RuleTemplate>>> parsePolicyState(
         PolicyInfo policyInfo) {
-        if (CollectionUtils.isEmpty(policyInfo.getPriorityStatus())) {
+        if (CollectionUtils.isEmpty(policyInfo.getOriginStatus())) {
             throw new InitializationException("Initial policies info error!");
         }
 
-        return policyInfo.getPriorityStatus().stream()
-            .collect(() -> new HashMap<PriorityStatus, List<Pair<String, RuleTemplate>>>(),
+        return policyInfo.getOriginStatus().stream()
+            .collect(() -> new HashMap<OriginStatus, List<Pair<String, RuleTemplate>>>(),
                 (map, status) -> map.put(status, status.getChildSeverity().stream()
                     .map(severity -> findSeverityDsl(policyInfo, severity))
                     .filter(Objects::nonNull)

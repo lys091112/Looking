@@ -1,10 +1,10 @@
-package com.crescent.alert.core;
+package com.crescent.alert.core.rule;
 
 import static com.crescent.alert.common.util.Constants.STATE_DURATION_SUFFIX;
 import static java.util.stream.Collectors.toMap;
 
 import com.crescent.alert.common.config.PolicyInfo;
-import com.crescent.alert.common.config.PolicyInfo.PriorityStatus;
+import com.crescent.alert.common.config.PolicyInfo.OriginStatus;
 import com.crescent.alert.common.dto.Rule;
 import com.crescent.alert.common.util.Constants;
 import com.crescent.alert.core.util.RuleParse;
@@ -22,50 +22,48 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
-/**
- */
 @Slf4j
-public class RuleManager {
-
-//    private RuleManager() {
-//    }
-//
-//    public static RuleManager getInstance() {
-//        return RuleManagementCreator.RULE_MANAGER.getInstance();
-//    }
-
+public class RuleProvider extends AbstractRuleProvider {
     /**
      * 存储Rule数据
-     * key: ruleId
-     * Value: rule
+     * key: ruleId, Value: rule
      */
     private ConcurrentHashMap<String, Rule> ruleDatas = new ConcurrentHashMap<>();
 
     /**
      * 存储规则的ruleTemplate
-     * key: ruleId
-     * Value: list of rule dsl grammar
+     * key: ruleId , Value: list of rule dsl grammar
      */
     private ConcurrentHashMap<String, List<TransGrammar>> ruleTemplates = new ConcurrentHashMap<>();
 
-
+    /**
+     * 记录告警规则DSL语句中设置的事件buffer的大小
+     */
     private ConcurrentHashMap<String, Map<String, String>> ruleDslPeriodInfo = new ConcurrentHashMap<>();
 
     /**
      * 添加规则处理数据时，需要的buffer最大长度
-     * key: ruleId
-     * Value: max length of rule buffer
+     * key: ruleId , Value: max length of rule buffer
      */
     private ConcurrentHashMap<String, Integer> ruleWindowSize = new ConcurrentHashMap<>();
 
+    /**
+     * 记录告警stream对象的规则id列表
+     * key streamId, value ruleIds
+     */
     private ConcurrentHashMap<String, Set<String>> ruleStreamMap = new ConcurrentHashMap<>();
 
-    public void registryRule(Rule rule, PriorityStatus priorityStatus) {
+    public RuleProvider(PolicyInfo policyInfo) {
+        super(policyInfo);
+    }
+
+    @Override
+    public void registryRule(Rule rule) {
         if (null == rule || CollectionUtils.isEmpty(rule.getInputStreams())) {
             log.error("inputStreams can't be null");
             return;
         }
-        List<TransGrammar> grammars = RuleParse.parseRuleOrderByPriorityLevel(rule, priorityStatus);
+        List<TransGrammar> grammars = RuleParse.parseRuleOrderByPriorityLevel(this, rule);
         ruleTemplates.put(rule.getRuleId(), grammars);
         ruleDatas.put(rule.getRuleId(), rule);
         statePeriods(rule, grammars);
@@ -89,7 +87,7 @@ public class RuleManager {
 
     private void statePeriods(Rule rule, List<TransGrammar> grammars) {
         Map<String, String> ruleDurationInfo = grammars.stream()
-            .collect(toMap(grammar -> grammar.getPriorityStatus().getSeverity().toLowerCase() + STATE_DURATION_SUFFIX,
+            .collect(toMap(grammar -> grammar.getOriginStatus().getOriginSeverity().toLowerCase() + STATE_DURATION_SUFFIX,
                 grammar -> String.valueOf(grammar.getRuleTemplate().getBoundingPeriodWithTimeUnit(grammar.getParameters())
                     .getKey())));
         ruleDurationInfo.put(Constants.CONTINUE_DURATION, String.valueOf(rule.getContinueDuration()));
@@ -114,6 +112,7 @@ public class RuleManager {
             }).max(Long::compareTo).get().intValue();
     }
 
+    @Override
     public void unRegistryRule(String ruleId) {
         if (!ruleDatas.containsKey(ruleId)) {
             return;
@@ -143,6 +142,7 @@ public class RuleManager {
     /**
      * 获取告警规则解析后的dsl， 用于告警计算
      */
+    @Override
     public Optional<List<TransGrammar>> getRuleTemplates(String ruleId) {
         return Optional.ofNullable(ruleTemplates.get(ruleId));
     }
@@ -151,6 +151,7 @@ public class RuleManager {
      * 获取告警规则设置的事件计算的时间或数量跨度， 主要用于状态配置 ``policies.json``
      * 定义的dsl中的时间窗口大小
      */
+    @Override
     public Optional<Map<String, String>> getRuleDslPeriodInfo(String ruleId) {
         return Optional.ofNullable(ruleDslPeriodInfo.get(ruleId));
     }
@@ -158,30 +159,20 @@ public class RuleManager {
     /**
      * 获取告警事件计算时，需要维护的buffer的最小长度，以便用于告警计算
      */
+    @Override
     public int getBufferSizeByStreamId(String streamId) {
         return ruleWindowSize.getOrDefault(streamId, 0);
     }
 
+    @Override
     public Set<String> getRuleIdsByStreamId(String streamId) {
         return ruleStreamMap.getOrDefault(streamId, new HashSet<>());
     }
 
+    @Override
     public Optional<Rule> getRule(String ruleId) {
         return Optional.ofNullable(ruleDatas.get(ruleId));
     }
-
-//    public enum RuleManagementCreator {
-//        RULE_MANAGER;
-//        private RuleManager manager;
-//
-//        RuleManagementCreator() {
-//            this.manager = new RuleManager();
-//        }
-//
-//        public RuleManager getInstance() {
-//            return manager;
-//        }
-//    }
 
     @Data
     public static class TransGrammar {
@@ -193,16 +184,16 @@ public class RuleManager {
 
         private RuleTemplate ruleTemplate;
 
-        private PriorityStatus priorityStatus;
+        private OriginStatus originStatus;
 
         public TransGrammar(Map<String, String> parameters, RuleTemplate parse,
-            PolicyInfo.PriorityStatus priorityStatus) {
-            if (null == priorityStatus) {
+            OriginStatus originStatus) {
+            if (null == originStatus) {
                 throw new IllegalArgumentException("transGrammar priorityStatus can't be empty!");
             }
             this.parameters = null == parameters ? new HashMap<>() : parameters;
             this.ruleTemplate = parse;
-            this.priorityStatus = priorityStatus;
+            this.originStatus = originStatus;
         }
     }
 }

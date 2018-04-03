@@ -7,7 +7,7 @@ import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class DefaultEventsProvider implements AbstractEventsProvider {
+public class DefaultEventsProvider implements IEventsProvider {
 
     private List<Event> events;
 
@@ -16,7 +16,7 @@ public class DefaultEventsProvider implements AbstractEventsProvider {
     }
 
     @Override
-    public List<Event> findEventsByFixedCount(String streamId, int count) {
+    public List<Event> findEventsByFixedCount(String streamId, String severity, int count) {
         List<Event> eventList = Lists.newLinkedList(events);
 
         int endIndex = eventList.size();
@@ -25,7 +25,7 @@ public class DefaultEventsProvider implements AbstractEventsProvider {
     }
 
     @Override
-    public List<Event> findEventsByTimeWindow(String streamId, long startTime, long endTime) {
+    public List<Event> findEventsByTimeWindow(String streamId, String severity, long startTime, long endTime) {
         return stream(events.spliterator(), false)
             .filter(event -> startTime < event.getTimestamp() && event.getTimestamp() <= endTime)
             .collect(Collectors.toList());

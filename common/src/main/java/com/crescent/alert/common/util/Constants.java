@@ -8,9 +8,9 @@ public class Constants {
     public final static String SEVERITY_VARIABLE = "severity";
 
     /**
-     * 计算告警事件状态时，是否需要数据buffer全量匹配
+     * 告警计算时，传递的当前ruleTemp对应的severity
      */
-    public final static String TOTAL_MATCHING = "totalMatching";
+    public final static String CONCURRENT_PARAMETER_SEVERITY = "concurrentParameterSeverity";
 
 
     /**

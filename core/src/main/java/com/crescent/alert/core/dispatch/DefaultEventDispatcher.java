@@ -1,14 +1,14 @@
 package com.crescent.alert.core.dispatch;
 
-import com.crescent.alert.core.AlertProvider;
-import com.crescent.alert.core.dispatch.filter.AlertFilter;
+import com.crescent.alert.common.dto.Rule;
 import com.crescent.alert.core.dispatch.filter.DisOrderEventFilter;
 import com.crescent.alert.core.dispatch.filter.EventTtlFilter;
 import com.crescent.alert.core.dispatch.handler.RuleHandler;
-import com.crescent.alert.core.domain.AlertEvent;
+import com.crescent.alert.core.rule.AlertEvent;
+import com.crescent.alert.core.rule.AbstractRuleProvider;
 import com.google.common.base.Preconditions;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
+import java.util.Optional;
 import java.util.Set;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
@@ -21,17 +21,15 @@ public class DefaultEventDispatcher extends EventDispatcher {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultEventDispatcher.class);
 
-    private List<AlertFilter> filters = new ArrayList<>();
+    private AbstractRuleProvider ruleProvider;
 
-    private AlertProvider alertProvider;
-
-    public DefaultEventDispatcher(AlertProvider alertProvider, RuleHandler ruleHandler) {
+    public DefaultEventDispatcher(AbstractRuleProvider alertProvider, RuleHandler ruleHandler) {
         Preconditions.checkNotNull(alertProvider, "rule handler can't be null");
-        Preconditions.checkNotNull(ruleHandler, "alertProvider is null");
-        this.alertProvider = alertProvider;
+        Preconditions.checkNotNull(ruleHandler, "ruleProvider is null");
+        this.ruleProvider = alertProvider;
         this.handler = ruleHandler;
-        filters.add(new DisOrderEventFilter());
-        filters.add(new EventTtlFilter());
+
+        addEventFilters(Arrays.asList(new DisOrderEventFilter(), new EventTtlFilter()));
     }
 
     @Override
@@ -44,15 +42,34 @@ public class DefaultEventDispatcher extends EventDispatcher {
             return;
         }
 
-        Set<String> ruleIds = alertProvider.getRuleManager().getRuleIdsByStreamId(event.getStreamId());
+        Set<String> ruleIds = ruleProvider.getRuleIdsByStreamId(event.getStreamId());
         if (CollectionUtils.isEmpty(ruleIds)) {
             LOGGER.warn("invalid event! can't find ruleInfo by event streamId, streamId:{}", event.getStreamId());
             return;
         }
+        for (String ruleId : ruleIds) {
+            if (!fillEvent(event, ruleId)) {
+                continue;
+            }
+            handler.execute(event);
+
+        }
 
         ruleIds.stream().forEach(ruleId -> {
-            event.setRuleId(ruleId);
-            handler.execute(event);
         });
+    }
+
+    /**
+     * 填充告警规则基本数据
+     */
+    private boolean fillEvent(AlertEvent event, String ruleId) {
+        Optional<Rule> ruleOptional = ruleProvider.getRule(event.getRuleId());
+        if (!ruleOptional.isPresent()) {
+            LOGGER.error("Can't find ruleInfo, May have been deleted. ruleId={}", event.getRuleId());
+            return false;
+        }
+        event.setRegion(ruleOptional.get().getRegion());
+        event.setRuleId(ruleId);
+        return true;
     }
 }

@@ -6,6 +6,7 @@ import com.crescent.alert.common.exception.InitializationException;
 import com.crescent.alert.core.collector.consumer.LookingConsumer;
 import com.crescent.alert.core.collector.producer.LookingProducer;
 import com.crescent.alert.core.collector.producer.Sender;
+import com.crescent.alert.core.collector.producer.SenderImpl;
 import com.crescent.alert.core.dispatch.EventDispatcher;
 import com.google.common.base.Preconditions;
 import java.util.ArrayList;
@@ -35,7 +36,7 @@ public class CollectorFactory {
             throw new InitializationException(
                 "No LookingProducer Impl can be found with ServiceLoader, please check your dependencies");
         }
-        return new Sender(res);
+        return new SenderImpl(res);
     }
 
 

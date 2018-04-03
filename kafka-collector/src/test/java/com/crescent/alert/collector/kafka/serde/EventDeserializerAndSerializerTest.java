@@ -5,7 +5,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.crescent.alert.common.enums.EventCategory;
-import com.crescent.alert.core.domain.AlertEvent;
+import com.crescent.alert.core.rule.AlertEvent;
 import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -2,7 +2,7 @@ package com.crescent.alert.event.provider.memory;
 
 import static java.util.stream.StreamSupport.stream;
 
-import com.crescent.alert.core.dispatch.provider.BaseEventsProvider;
+import com.crescent.alert.core.dispatch.event.BaseEventsProvider;
 import com.crescent.alert.engine.provider.Event;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,8 +12,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
- * TODO {crescent} 数据遍历需要优化，尽可能高效的查询
- * shit code
+ * TODO {crescent} 数据遍历需要优化，尽可能高效的查询，改造该类，优化数据结构，并拆分数据存储
+ *
  */
 public class MemoryEventsProvider extends BaseEventsProvider {
 
@@ -24,40 +24,11 @@ public class MemoryEventsProvider extends BaseEventsProvider {
 
     private ConcurrentHashMap<String, ArrayList<Event>> events = new ConcurrentHashMap<>();
 
-    @Override
-    public List<Event> findEventsByFixedCount(String streamId, int count) {
-        if (!events.containsKey(streamId)) {
-            return Collections.emptyList();
-        }
-
-        ArrayList<Event> lst = events.get(streamId);
-        checkAndCleanCount(streamId, lst);
-        List<Event> res = new ArrayList<>(count);
-        for (int i = lst.size() - 1; count > 0; i--, count--) {
-            res.add(lst.get(i));
-        }
-        return res;
-    }
-
     private void checkAndCleanCount(String streamId, ArrayList<Event> lst) {
         int bufferLength = bufferSize(streamId);
         if (lst.size() > bufferLength * rate) {
             lst.subList(0, lst.size() - bufferLength - 1).clear();
         }
-    }
-
-
-    @Override
-    public List<Event> findEventsByTimeWindow(String streamId, long startTime, long endTime) {
-        if (!events.containsKey(streamId)) {
-            return Collections.emptyList();
-        }
-
-        ArrayList<Event> lst = events.get(streamId);
-        checkAndCleanWindow(streamId, lst);
-        return stream(lst.spliterator(), false)
-            .filter(event -> startTime < event.getTimestamp() && event.getTimestamp() <= endTime)
-            .collect(Collectors.toList());
     }
 
     /**
@@ -93,7 +64,35 @@ public class MemoryEventsProvider extends BaseEventsProvider {
     }
 
     @Override
-    public boolean addEvent(Event event) {
+    protected List<Event> doFindEventsByFixedCount(String streamId, int count) {
+        if (!events.containsKey(streamId)) {
+            return Collections.emptyList();
+        }
+
+        ArrayList<Event> lst = events.get(streamId);
+        checkAndCleanCount(streamId, lst);
+        List<Event> res = new ArrayList<>(count);
+        for (int i = lst.size() - 1; count > 0; i--, count--) {
+            res.add(lst.get(i));
+        }
+        return res;
+    }
+
+    @Override
+    protected List<Event> doFindEventsByTimeWindow(String streamId, long startTime, long endTime) {
+        if (!events.containsKey(streamId)) {
+            return Collections.emptyList();
+        }
+
+        ArrayList<Event> lst = events.get(streamId);
+        checkAndCleanWindow(streamId, lst);
+        return stream(lst.spliterator(), false)
+            .filter(event -> startTime < event.getTimestamp() && event.getTimestamp() <= endTime)
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean pushEvent(Event event) {
         if (!events.containsKey(event.getRuleId())) {
             events.put(event.getRuleId(), new ArrayList<>());
         }

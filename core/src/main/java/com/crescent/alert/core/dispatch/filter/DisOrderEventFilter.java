@@ -1,6 +1,6 @@
 package com.crescent.alert.core.dispatch.filter;
 
-import com.crescent.alert.core.domain.AlertEvent;
+import com.crescent.alert.core.rule.AlertEvent;
 import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,8 +9,6 @@ import org.slf4j.LoggerFactory;
  * 处理乱序数据
  */
 public class DisOrderEventFilter implements AlertFilter {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(DisOrderEventFilter.class);
 
     private ConcurrentHashMap<String, Long> recordComingEventTime = new ConcurrentHashMap<>();
 
@@ -21,7 +19,7 @@ public class DisOrderEventFilter implements AlertFilter {
     public boolean filter(AlertEvent event) {
 
         if (event.getTimestamp() < recordComingEventTime.getOrDefault(event.getStreamId(), 0L)) {
-            LOGGER.error("disOrder event! event streamId is {}, eventTime:{}", event.getStreamId(), event.getTimestamp());
+            LOGGER.error("DisOrder event! event streamId is {}, eventTime:{}", event.getStreamId(), event.getTimestamp());
             return false;
         }
         recordComingEventTime.put(event.getStreamId(), event.getTimestamp());

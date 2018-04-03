@@ -7,17 +7,17 @@ import lombok.EqualsAndHashCode;
 @Data
 public class PolicyInfo {
 
-    private List<PriorityStatus> priorityStatus;
+    private List<OriginStatus> originStatus;
 
     private List<Policy> policies;
 
     @Data
     @EqualsAndHashCode
-    public static class PriorityStatus {
+    public static class OriginStatus {
 
         private int priorityLevel;
 
-        private String severity;
+        private String originSeverity;
 
         private List<String> childSeverity;
 

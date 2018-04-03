@@ -1,8 +1,8 @@
 {
-  "priorityStatus": [
+  "originStatus": [
     {
       "priority": 1,
-      "severity": "NORMAL",
+      "originSeverity": "NORMAL",
       "defaultState": true,
       "childSeverity": [
         "CLOSE_WARNING",
@@ -11,7 +11,7 @@
     },
     {
       "priority": 2,
-      "severity": "WARNING",
+      "originSeverity": "WARNING",
       "childSeverity": [
         "OPEN_WARNING",
         "DOWNGRADED",
@@ -20,7 +20,7 @@
     },
     {
       "priority": 3,
-      "severity": "CRITICAL",
+      "originSeverity": "CRITICAL",
       "childSeverity": [
         "OPEN_CRITICAL",
         "CONTINUES_CRITICAL",

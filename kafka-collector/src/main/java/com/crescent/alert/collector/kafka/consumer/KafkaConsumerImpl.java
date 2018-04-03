@@ -7,7 +7,7 @@ import com.crescent.alert.common.config.LookingConfig.ConsumerConfig;
 import com.crescent.alert.common.exception.InitializationException;
 import com.crescent.alert.core.collector.consumer.Worker;
 import com.crescent.alert.core.dispatch.EventDispatcher;
-import com.crescent.alert.core.domain.AlertEvent;
+import com.crescent.alert.core.rule.AlertEvent;
 import com.google.common.base.Preconditions;
 import java.util.Arrays;
 import java.util.List;

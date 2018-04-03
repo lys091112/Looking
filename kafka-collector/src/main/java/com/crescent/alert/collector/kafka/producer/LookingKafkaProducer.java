@@ -3,7 +3,7 @@ package com.crescent.alert.collector.kafka.producer;
 import com.crescent.alert.common.config.LookingConfig.ProducerConfig;
 import com.crescent.alert.core.collector.producer.AbstractLookingProducer;
 import com.crescent.alert.core.collector.producer.LookingProducer;
-import com.crescent.alert.core.domain.AlertEvent;
+import com.crescent.alert.core.rule.AlertEvent;
 import com.google.common.base.Preconditions;
 import java.util.HashSet;
 import java.util.List;

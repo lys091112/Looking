@@ -1,7 +1,7 @@
-package com.crescent.alert.core.dispatch.provider;
+package com.crescent.alert.core.dispatch.event;
 
 import com.crescent.alert.common.exception.InitializationException;
-import com.crescent.alert.core.AlertProvider;
+import com.crescent.alert.core.rule.RuleProvider;
 import com.google.common.base.Preconditions;
 import java.util.Iterator;
 import java.util.ServiceLoader;
@@ -15,7 +15,7 @@ public abstract class EventProviderFactory {
 
     public abstract BaseEventsProvider createEventProvider();
 
-    protected BaseEventsProvider createEventProvider(AlertProvider alertProvider, String eventProviderType) {
+    protected BaseEventsProvider createEventProvider(RuleProvider ruleProvider, String eventProviderType) {
         Preconditions.checkArgument(StringUtils.isNoneBlank(eventProviderType), "Event window type is blank!");
 
         if (LOGGER.isDebugEnabled()) {
@@ -37,7 +37,7 @@ public abstract class EventProviderFactory {
                 + "event provider type is " + eventProviderType);
         }
 
-        provider.setAlertProvider(alertProvider);
+        provider.setRuleProvider(ruleProvider);
         return provider;
     }
 }
