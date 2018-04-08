@@ -24,11 +24,11 @@ public abstract class BaseEventsProvider implements IEventsProvider {
     public BaseEventsProvider() {
     }
 
-    public abstract boolean pushEvent(Event event);
+    public abstract boolean sink(Event event);
 
     public void clear(Event event) {
         this.clear(event.getStreamId());
-        pushEvent(event);
+        sink(event);
     }
 
     public abstract void clear(String streamId);
@@ -105,5 +105,4 @@ public abstract class BaseEventsProvider implements IEventsProvider {
         }
         return events;
     }
-
 }

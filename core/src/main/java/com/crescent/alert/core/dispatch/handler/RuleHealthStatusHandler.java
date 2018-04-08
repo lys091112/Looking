@@ -36,7 +36,7 @@ public class RuleHealthStatusHandler extends RuleHandler {
             return Optional.empty();
         }
 
-        this.eventsProvider.pushEvent(event);
+        this.eventsProvider.sink(event);
 
         List<Pair<String, RuleTemplate>> templates = ruleProvider.findFixedRuleTemplate(event.getSeverityLevel());
 

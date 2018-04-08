@@ -30,7 +30,7 @@ public class RuleRawMetricHandler extends RuleHandler {
             return Optional.empty();
         }
 
-        eventsProvider.pushEvent(event);
+        eventsProvider.sink(event);
 
         RuleResult res;
         for (TransGrammar grammar : optional.get()) {

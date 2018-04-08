@@ -32,4 +32,6 @@ ext {
 
     //test
     Junit_Version = '4.12'
+    Assertj_Version = '3.9.1'
+    Mockito_Version = '1.10.15'
 }
